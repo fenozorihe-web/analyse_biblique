@@ -18,6 +18,7 @@ const PORT = process.env.PORT || 3000;
 // === MIDDLEWARES ===
 app.use(cors()); // Autorise votre page HTML front-end à appeler cette API
 app.use(express.json()); // Permet à Express de lire le format JSON envoyé par le Front-end
+app.use(express.static('public'))
 
 // === CONNEXION MONGODB ===
 mongoose.connect(process.env.MONGODB_URI)
