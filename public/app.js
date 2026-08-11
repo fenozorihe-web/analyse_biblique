@@ -9,7 +9,8 @@ const theologieContainer = document.getElementById('theologieContainer');
 const proverbesContainer = document.getElementById('proverbesContainer');
 
 // URL de votre API Backend Node.js
-const API_URL = 'http://localhost:3000/api/analyze'; 
+//const API_URL = 'http://localhost:3000/api/analyze'; 
+const API_URL = '/api/items'; 
 
 btnAnalyze.addEventListener('click', async () => {
     const textValue = bibleTextInput.value.trim();
