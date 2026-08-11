@@ -26,7 +26,8 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch((err) => console.error("❌ Échec de la connexion MongoDB :", err));
 
 // === LA ROUTE EXPRESS COMPLETE ===
-app.post("/api/analyze", async (req, res) => {
+//app.post("/api/analyze", async (req, res) => {
+app.post('/api/items', async (req, res) => {
   try {
     // 1. Récupération du texte biblique envoyé par le Front-end
     const { userBibleText } = req.body;
