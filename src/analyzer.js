@@ -95,8 +95,8 @@ export async function analyzeBibleText(bibleText) {
            - Pour les Évangiles et récits de l'Ancien Testament : Analyse narrative (intrigue, personnages, cadre, étude lexicale).
            - Pour les Psaumes / Proverbes : Analyse poétique, parallélisme, étude métaphorique et sémantique.
            - Pour la Prophétie / Apocalyptique : Analyse historico-critique, étude des symboles et motifs théologiques.
-        3. Pour chaque mot clé dans "mots_cles_originaux", fournis son sens ("sens_selon_methode") en appliquant STRICTEMENT la méthode d'analyse choisie (par exemple, si c'est narratif, explique le rôle du mot dans l'intrigue ou le portrait du personnage ; si c'est une épître, explique sa fonction grammaticale ou théologique dans l'argumentation de l'auteur).
-        4. Extrais les "cles_theologiques" majeures du texte avec des explications pertinentes par un paragraphe court pour chacun.
+        3. Pour chaque mot clé dans "mots_cles_originaux", fournis son sens ("sens_selon_methode") en appliquant STRICTEMENT la méthode d'analyse choisie (par exemple, si c'est narratif, explique le rôle du mot dans l'intrigue ou le portrait du personnage ; si c'est une épître, explique sa fonction grammaticale ou théologique dans l'argumentation de l'auteur). Defends aussi son sens avec de versets bibliques correspondants qui seront juste cités entre paranthèse après le sens.
+        4. Extrais les "cles_theologiques" majeures du texte avec des explications pertinentes par un paragraphe court supporté par des versets bibliques, mis en entre parathèse, pour chacun.
         4. Développe la "pertinence_canonique" :
            - "dans_le_livre" : Explique comment ce texte contribue au message théologique global du livre où il se trouve.
            - "dans_le_canon" : Fais dialoguer ce texte avec le reste de la Bible. Si c'est l'AT, montre comment il pointe vers le NT ou le Christ (typologie/accomplissement). Si c'est le NT, montre comment il s'enracine dans l'AT.
