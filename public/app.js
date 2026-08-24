@@ -51,6 +51,7 @@ if (btnSubmitAction && actionSelect) {
             });
 
             const data = await response.json();
+            console.log("Données reçues du serveur :", data);
 
             if (data.success) {
                 displayResults(data);
