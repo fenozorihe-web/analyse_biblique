@@ -71,6 +71,8 @@ if (btnSubmitAction && actionSelect) {
             actionSelect.disabled = false;
         }
     });
+}else{
+    console.log("Le bouton n'est pas encore entendu");
 }
 
 /**
