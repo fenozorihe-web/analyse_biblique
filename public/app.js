@@ -18,6 +18,7 @@ const API_URL = '/api/items';
 if (btnSubmitAction && actionSelect) {
     btnSubmitAction.addEventListener('click', async () => {
         const textValue = bibleTextInput.value.trim();
+        console.log("Le contenu à executer est:", textValue, "et le btnSubmitAction listener est entendu")
         
         // 1. Validation de la saisie de texte
         if (!textValue) {
