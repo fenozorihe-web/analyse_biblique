@@ -42,7 +42,7 @@
 
         <!-- FORMULAIRE -->
         <section class="bg-white rounded-2xl shadow-lg p-8 mb-8 flex flex-col gap-6">
-
+        
             <!-- En-tête -->
             <div>
                 <h2 class="text-2xl font-bold text-slate-900 mb-1">
@@ -52,7 +52,7 @@
                     Sélectionnez une action après avoir collé votre texte.
                 </p>
             </div>
-
+        
             <!-- Zone de saisie -->
             <div class="flex flex-col gap-2">
                 <label for="bibleText" class="text-sm font-semibold text-slate-700">
@@ -62,48 +62,37 @@
                     class="w-full border border-slate-300 rounded-xl p-4 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition resize-y"
                     placeholder="Exemple : Matthieu 5:9 ou collez ici votre texte biblique complet..."></textarea>
             </div>
-
-            <!-- Actions / Boutons Alignés Horizontalement -->
-            <div class="flex flex-row items-center gap-4 pt-2 overflow-x-auto pb-2 scrollbar-thin">
-
-                <!-- Analyser -->
-                <button id="btnAnalyze"
-                    class="flex-1 min-w-[160px] whitespace-nowrap px-5 py-3.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-semibold flex items-center justify-center gap-3 transition shadow-sm hover:shadow">
-                    <span>Analyser le texte</span>
-                    <div id="loaderAnalyze"
-                        class="hidden animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent">
-                    </div>
-                </button>
-
-                <!-- Prédire -->
-                <button id="btnPreach"
-                    class="flex-1 min-w-[160px] whitespace-nowrap px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl flex items-center justify-center gap-3 transition shadow-sm hover:shadow">
-                    <span>Prédire le texte</span>
-                    <div id="loaderPreach"
-                        class="hidden animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent">
-                    </div>
-                </button>
-
-                <!-- Enseigner -->
-                <button id="btnTeach"
-                    class="flex-1 min-w-[160px] whitespace-nowrap px-5 py-3.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl flex items-center justify-center gap-3 transition shadow-sm hover:shadow">
-                    <span>Enseigner le texte</span>
-                    <div id="loaderTeach"
-                        class="hidden animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent">
-                    </div>
-                </button>
-
-                <!-- Arranger -->
-                <button id="btnArrange"
-                    class="flex-1 min-w-[160px] whitespace-nowrap px-5 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl flex items-center justify-center gap-3 transition shadow-sm hover:shadow">
-                    <span>Arranger le texte</span>
-                    <div id="loaderArrange"
-                        class="hidden animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent">
-                    </div>
-                </button>
-
+        
+            <!-- Actions / Liste déroulante et Bouton Unique -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
+        
+                <!-- Liste déroulante -->
+                <div class="flex-1 flex flex-col gap-2">
+                    <label for="actionSelect" class="text-sm font-semibold text-slate-700">
+                        Choisir l'action à réaliser
+                    </label>
+                    <select id="actionSelect"
+                        class="w-full border border-slate-300 rounded-xl p-3.5 bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition cursor-pointer text-slate-700 font-medium">
+                        <option value="analyser" selected>🔍 Analyser le texte</option>
+                        <option value="predire">🌿 Prédire le texte (Prédication)</option>
+                        <option value="enseigner">📖 Enseigner le texte (Enseignement)</option>
+                        <option value="arranger">✨ Arranger le texte (Agencement)</option>
+                    </select>
+                </div>
+        
+                <!-- Bouton de validation unique -->
+                <div class="flex flex-col justify-end pt-7">
+                    <button id="btnSubmitAction"
+                        class="w-full sm:w-auto min-w-[200px] px-6 py-3.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-semibold flex items-center justify-center gap-3 transition shadow-sm hover:shadow">
+                        <span id="btnText">Exécuter l'action</span>
+                        <div id="globalLoader"
+                            class="hidden animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent">
+                        </div>
+                    </button>
+                </div>
+        
             </div>
-
+        
         </section>
 
         <!-- RESULTATS -->
