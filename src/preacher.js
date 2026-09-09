@@ -59,11 +59,11 @@ export async function preachBibleText(userBibleText, pericopeData) {
                         type_predication: { type: "string" },
                         theme_principal: { type: "string" },
                         introduction: { type: "string" },
-                        mots_cles_ohabolana: { 
-                            type: "array", 
-                            items: { type: "string" },
-                            description: "Liste de 3 à 5 mots-clés en français pour chercher des proverbes malgaches correspondants" 
-                        },
+                        // mots_cles_ohabolana: { 
+                        //     type: "array", 
+                        //     items: { type: "string" },
+                        //     description: "Liste de 3 à 5 mots-clés en français pour chercher des proverbes malgaches correspondants" 
+                        // },
                         points_principaux: {
                             type: "array",
                             items: {
@@ -84,7 +84,7 @@ export async function preachBibleText(userBibleText, pericopeData) {
                         "type_predication", 
                         "theme_principal",
                         "introduction",
-                        "mots_cles_ohabolana",
+                        // "mots_cles_ohabolana",
                         "points_principaux", 
                         "conclusion"
                     ]
@@ -105,50 +105,10 @@ export async function preachBibleText(userBibleText, pericopeData) {
     //Lecture correcte du format JSON retourné par Gemini
     const rawData = JSON.parse(response.text);
     // console.log("Le rawData est contitué par:", rawData);
-    
+
     // Construction HTML optimisé incluant l'interrelation des textes
     const htmlSermon = `
-      <div class="space-y-6">
-        <!-- Bloc d'infos des textes de la péricope extraits de MongoDB -->
-        ${detailsLecturesHtml}
-
-        <!-- 1. Interrelations des textes de la péricope -->
-        <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-          <h4 class="font-bold text-blue-950 text-sm uppercase tracking-wider flex items-center gap-1.5">🤝 Harmonie de la Péricope</h4>
-          <p class="text-xs text-blue-900 mt-1 leading-relaxed">${rawData.interrelations_textes || "Analyse croisée indisponible."}</p>
-        </div>
-
-        <!-- 2. Thème Principal -->
-        <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-100 shadow-sm">
-          <h4 class="font-bold text-emerald-950 text-xs uppercase tracking-wider">Thème central du message</h4>
-          <p class="text-emerald-900 font-bold text-lg mt-1">🎯 ${rawData.theme_principal || "Non spécifié"}</p>
-        </div>
-
-        <!-- 3. Structure Homilétique complète -->
-        <div class="space-y-4 pt-2">
-          <div>
-            <h5 class="font-bold text-slate-800 text-sm">💡 Introduction (Fidirana)</h5>
-            <p class="text-xs text-slate-600 mt-1 leading-relaxed pl-4 border-l-2 border-slate-200">${rawData.introduction || ""}</p>
-          </div>
-
-          <div class="space-y-3">
-            <h5 class="font-bold text-slate-800 text-sm">🔥 Corps du Message (Ny Ranony)</h5>
-            <div class="space-y-3 pl-4">
-              ${(rawData.points_principaux || []).map((p, idx) => `
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                  <p class="font-semibold text-slate-900 text-xs">Point ${idx + 1} : ${p.titre}</p>
-                  <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">${p.explication}</p>
-                </div>
-              `).join("")}
-            </div>
-          </div>
-
-          <div>
-            <h5 class="font-bold text-slate-800 text-sm">🏁 Conclusion & Application (Famaranana)</h5>
-            <p class="text-xs text-slate-600 mt-1 leading-relaxed pl-4 border-l-2 border-slate-200">${rawData.conclusion || ""}</p>
-          </div>
-        </div>
-      </div>
+      
     `;
     return htmlSermon
         // return {

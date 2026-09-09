@@ -97,17 +97,60 @@
 
         <!-- CONTENEUR GLOBAL DES RÉSULTATS -->
         <section id="resultSection" class="hidden space-y-8">
-
+        
             <!-- INTERFACE ACTION = "PREDIRE" (UNIQUEMENT DU SERMON HTML HÉRITÉ DE PREACHER.JS) -->
             <div id="sermonBlock" class="hidden bg-white rounded-2xl p-8 shadow-md border border-indigo-100">
                 <h3 class="text-2xl font-bold text-indigo-900 mb-6 flex items-center gap-2 border-b pb-3">
                     ⛪ Structure de la Prédication Contextuelle
                 </h3>
                 <div id="sermonContainer" class="prose max-w-none text-slate-800">
-                    <!-- Le HTML pur de preacher.js s'injectera ici de manière exclusive -->
+        
+                    <!-- 1. Genre du texte -->
+                    <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                        <h4 class="font-bold text-blue-950 text-sm uppercase tracking-wider flex items-center gap-1.5">🤝
+                            Genre du texte</h4>
+                        <p id="genre_texte" class="text-xs text-blue-900 mt-1 leading-relaxed"></p>
+                    </div>
+
+                    <!-- 2. Interrelations des textes de la péricope -->
+                    <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                        <h4 class="font-bold text-blue-950 text-sm uppercase tracking-wider flex items-center gap-1.5">🤝
+                            Harmonie de la Péricope</h4>
+                        <p id="interrelation_textes" class="text-xs text-blue-900 mt-1 leading-relaxed"></p>
+                    </div>
+        
+                    <!-- 3. Type de prédication -->
+                    <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-100 shadow-sm">
+                        <h4 class="font-bold text-emerald-950 text-xs uppercase tracking-wider">Type de prédication</h4>
+                        <p id="type_predication" class="text-emerald-900 font-bold text-lg mt-1"></p>
+                    </div>
+
+                    <!-- 4. Thème Principal -->
+                    <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-100 shadow-sm">
+                        <h4 class="font-bold text-emerald-950 text-xs uppercase tracking-wider">Thème central du message</h4>
+                        <p id="theme_principal" class="text-emerald-900 font-bold text-lg mt-1"></p>
+                    </div>
+        
+                    <!-- 5. Structure Homilétique complète -->
+                    <div class="space-y-4 pt-2">
+                        <div>
+                            <h5 class="font-bold text-slate-800 text-sm">💡 Introduction</h5>
+                            <p id="introduction" class="text-xs text-slate-600 mt-1 leading-relaxed pl-4 border-l-2 border-slate-200"></p>
+                        </div>
+        
+                        <div class="space-y-3">
+                            <h5 class="font-bold text-slate-800 text-sm">🔥 Corps du Message</h5>
+                            <div id="points_principaux" class="space-y-3 pl-4"></div>
+                        </div>
+        
+                        <div>
+                            <h5 class="font-bold text-slate-800 text-sm">🏁 Conclusion & Application</h5>
+                            <p id="conclusion" class="text-xs text-slate-600 mt-1 leading-relaxed pl-4 border-l-2 border-slate-200"></p>
+                        </div>
+                    </div>
                 </div>
             </div>
-
+        
             <!-- INTERFACE ACTION = "ANALYSER" (ANALYSE CLASSIQUE COMPLÈTE) -->
             <div id="analyserInterfaceBlock" class="hidden space-y-8">
                 <!-- RAPPORT -->
@@ -125,7 +168,7 @@
                         </div>
                     </div>
                 </div>
-
+        
                 <!-- 3 BLOCS EN GRILLE -->
                 <div class="grid lg:grid-cols-3 gap-6">
                     <!-- EXÉGÈSE -->
@@ -133,20 +176,20 @@
                         <h3 class="text-xl font-bold text-blue-800 mb-4">🔍 Étude Lexicale</h3>
                         <div id="exegeseContainer" class="space-y-4 text-sm"></div>
                     </div>
-
+        
                     <!-- THÉOLOGIE -->
                     <div id="theologie" class="bg-white rounded-2xl p-6 shadow-md card-hover">
                         <h3 class="text-xl font-bold text-emerald-800 mb-4">⚖️ Clés Théologiques</h3>
                         <ul id="theologieContainer" class="list-disc list-inside space-y-2 text-sm"></ul>
                     </div>
-
+        
                     <!-- CONTEXTE MALAGASY -->
                     <div id="contexte" class="bg-orange-50 rounded-2xl p-6 shadow-md border border-orange-100 card-hover">
                         <h3 class="text-xl font-bold text-orange-800 mb-4">🇲🇬 Ohabolana & Contextualisation</h3>
                         <div id="proverbesContainer" class="space-y-4 text-sm"></div>
                     </div>
                 </div>
-
+        
                 <!-- PORTÉE CANONIQUE -->
                 <div class="grid md:grid-cols-2 gap-6">
                     <div class="bg-blue-50 rounded-2xl p-6 border border-blue-100 shadow-sm card-hover">
@@ -158,8 +201,7 @@
                     </div>
                 </div>
                 <!-- LUTHÉRIEN -->
-                <div
-                    class="bg-rose-50 rounded-2xl p-6 border border-rose-100 shadow-sm card-hover">
+                <div class="bg-rose-50 rounded-2xl p-6 border border-rose-100 shadow-sm card-hover">
                     <h3 class="text-xl font-bold text-rose-900 mb-4">⛪ Perspective Luthérienne</h3>
                     <h4 class="font-semibold mb-2">Loi & Évangile</h4>
                     <p id="lutherDoctrinale" class="text-sm text-gray-700 mb-4"></p>
@@ -167,7 +209,7 @@
                     <p id="lutherConfession" class="text-sm text-gray-700"></p>
                 </div>
             </div>
-
+        
         </section>
 
         </div>
@@ -176,5 +218,6 @@
 
     </main>
     <script src="app.js"></script>
+    <script src="fonctions.js"></script>
 </body>
 </html>

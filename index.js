@@ -106,23 +106,24 @@ app.post('/api/prediction', async (req, res) => {
       // ...
     }
 
-    const conceptsToSearch = resultPreacher.motsCles || [];
-    console.log(`🔍 Mots-clés extraits (Preacher) pour MongoDB : [${conceptsToSearch.join(", ")}]`);
+    // const conceptsToSearch = resultPreacher.motsCles || [];
+    // console.log(`🔍 Mots-clés extraits (Preacher) pour MongoDB : [${conceptsToSearch.join(", ")}]`);
 
-    console.log("🍃 Recherche des ohabolana correspondants dans MongoDB...");
-    const matchedProverbs = await findMatchingProverbs(conceptsToSearch);
+    // console.log("🍃 Recherche des ohabolana correspondants dans MongoDB...");
+    // const matchedProverbs = await findMatchingProverbs(conceptsToSearch);
 
     return res.status(200).json({
-      success: true,
-      action: currentAction,
-      genre_litteraire: resultPreacher.genre_litteraire,
-      interrelations_textes: resultPreacher.interrelations_textes,
-      type_predication: resultPreacher.type_predication,
-      theme_principal: resultPreacher.theme_principal,
-      introduction: resultPreacher.introduction,
-      points_principaux: resultPreacher.points_principaux,
-      conclusion: resultPreacher.conclusion,
-      illustrations_malgaches: matchedProverbs
+      resultPreacher
+      // success: true,
+      // action: currentAction,
+      // genre_litteraire: resultPreacher.genre_litteraire,
+      // interrelations_textes: resultPreacher.interrelations_textes,
+      // type_predication: resultPreacher.type_predication,
+      // theme_principal: resultPreacher.theme_principal,
+      // introduction: resultPreacher.introduction,
+      // points_principaux: resultPreacher.points_principaux,
+      // conclusion: resultPreacher.conclusion,
+      // illustrations_malgaches: matchedProverbs
     });
 
   } catch (error) {
