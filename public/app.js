@@ -185,7 +185,9 @@ function displayResults(data) {
     }
 
     // ✅ CORRECTION 1 & 3 : Affichage exclusif du bloc d'analyse et scroll fluide
-    if (analyserInterfaceBlock) analyserInterfaceBlock.classList.remove('hidden');
+    if (analyserInterfaceBlock) {
+        analyserInterfaceBlock.classList.remove('hidden')
+    };
     if (resultSection) {
         resultSection.classList.remove('hidden');
         resultSection.scrollIntoView({ behavior: 'smooth' });

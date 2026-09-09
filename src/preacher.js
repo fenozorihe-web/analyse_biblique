@@ -95,7 +95,7 @@ export async function preachBibleText(userBibleText, pericopeData) {
                 
                 Tu dois :
                 1. Expliquer brièvement les interrelations théologiques et logiques entre ces différents textes.
-                   Voici le texte ciblé par l'utilisateur : "${text}", et le contexte extrait de MongoDB : ${contextePericopePrompt}.
+                   Voici le texte ciblé par l'utilisateur : "${userBibleText}", et le contexte extrait de MongoDB : ${contextePericopePrompt}.
                 2. Dégager un thème principal unifié pour la prédication.
                 3. Générer un tableau de mots-clés simples ("mots_cles_ohabolana") pour trouver des correspondances de proverbes malgaches (ex: ["repentance", "sagesse"]).
                 4. Développer les points principaux du sermon avec des explications claires et contextuelles.`
