@@ -1,3 +1,18 @@
+import { GoogleGenAI, Type } from "@google/genai";
+import dotenv from "dotenv";
+import path from "path";
+
+// Forcer le chargement du fichier .env depuis la racine du projet
+dotenv.config({ path: path.resolve(process.cwd(), ".env") });
+
+// Vérification de sécurité dans la console
+if (!process.env.GEMINI_API_KEY) {
+  console.error("❌ Alerte : GEMINI_API_KEY n'est pas lue par le fichier analyzer.js !");
+}
+
+// Initialisation du client avec la clé d'environnement
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
 /**
  * Analyse un texte biblique avec le modèle Gemini-2.5-flash
  * @param {Object} ai - L'instance initialisée de GoogleGenAI
