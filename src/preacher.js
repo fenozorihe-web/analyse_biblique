@@ -43,11 +43,7 @@ export async function preachBibleText(userBibleText, pericopeData) {
       `;
     }
 
-    try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash", 
-      contents: `Predique le texte suivant : "${userBibleText}"`,
-      config: {
+    const requestConfig = {
         temperature: 0.2, // Faible température pour garantir la rigueur académique
         responseMimeType: "application/json",
                 // 1. MISE À JOUR DU SCHÉMA : Ajout des champs de genre et de méthode
@@ -99,36 +95,35 @@ export async function preachBibleText(userBibleText, pericopeData) {
                 2. Dégager un thème principal unifié pour la prédication.
                 3. Générer un tableau de mots-clés simples ("mots_cles_ohabolana") pour trouver des correspondances de proverbes malgaches (ex: ["repentance", "sagesse"]).
                 4. Développer les points principaux du sermon avec des explications claires et contextuelles.`
-        },
-    });
+    }
 
+    try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash", 
+      contents: `Predique le texte suivant : "${userBibleText}"`,
+      config: requestConfig
+    });
     //Lecture correcte du format JSON retourné par Gemini
     const rawData = JSON.parse(response.text);
     // console.log("Le rawData est contitué par:", rawData);
+    
+    return rawData
 
-    // Construction HTML optimisé incluant l'interrelation des textes
-    const htmlSermon = `
-      
-    `;
-    return htmlSermon
-        // return {
-        //     success: true,
-        //     html: htmlSermon,
-        //     genre_litteraire: rawData.genre_litteraire || "Homilétique / Prédication",
-        //     interrelations_textes: rawData.interrelations_textes,
-        //     type_predication: rawData.type_predication,
-        //     theme_principal: rawData.theme_principal,
-        //     introduction: rawData.introduction,
-        //     points_principaux: rawData.points_principaux,
-        //     conclusion: rawData.conclusion
-        //     // motsCles: rawData.mots_cles_ohabolana || [],
-        //     // genre_litteraire: rawData.genre_litteraire || "Homilétique / Prédication",
-        //     // interrelations_textes: rawData.interrelations_textes,
-        //     // type_predication: rawData.type_predication
-        // };
-
-  } catch (error) {
-    console.error("Erreur dans preacher.js :", error);
-    throw error;
-  }
+  } catch (firstError) {
+    // En cas d'erreur 503 ou de surcharge, on capture l'exception et on bascule immédiatement sur le modèle de secours
+    console.warn("⚠️ Le modèle principal est saturé (Erreur 503). Bascule automatique sur gemini-1.5-flash de secours...");
+    
+    try {
+        response = await ai.models.generateContent({
+            model: "gemini-1.5-flash", // Modèle alternatif très robuste aux surcharges
+            contents: `Prédique le texte suivant : "${text}"`,
+            config: requestConfig
+        });
+        return JSON.parse(response.text)
+        
+    } catch (fallbackError) {
+        console.error("❌ Les deux modèles de l'API Gemini ont échoué.", fallbackError);
+        throw fallbackError;
+    }
+}
 }
