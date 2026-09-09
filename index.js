@@ -9,6 +9,12 @@ import mongoose from "mongoose";
 import { analyzeBibleText } from "./src/analyzer.js";
 import { findMatchingProverbs } from "./src/searchEngine.js";
 
+import { findPericopeByText } from "./src/searchEngine.js";
+import { preachBibleText } from "./src/preacher.js";
+
+import { teachBibleText } from "./src/teacher.js";
+import { arrangeBibleText } from "./src/arranger.js";
+
 // Charger les variables d'environnement
 dotenv.config();
 
@@ -73,6 +79,49 @@ app.post('/api/items', async (req, res) => {
       success: false,
       message: "Une erreur interne est survenue durant l'analyse."
     });
+  }
+});
+
+app.post('/api/items2', async (req, res) => {
+  try {
+    const { userBibleText, actionRequested } = req.body;
+    if (!userBibleText || userBibleText.trim() === "") {
+      return res.status(400).json({ success: false, message: "Le texte est requis." });
+    }
+
+    const currentAction = actionRequested || "analyser";
+    let aiAnalysis = null;
+
+    if (currentAction === "predire") {
+      // ÉTAPE SPÉCIFIQUE : Rechercher d'abord les textes interconnectés de la péricope dans MongoDB
+      console.log("🔍 Recherche des textes de la péricope associés dans MongoDB...");
+      const pericopeData = await findPericopeByText(userBibleText);
+
+      // On appelle le preacher en lui passant le texte de base ET la péricope trouvée
+      aiAnalysis = await preachBibleText(userBibleText, pericopeData);
+    } else {
+      // Vos autres embranchements (enseigner, arranger, analyser) restent identiques
+      // ...
+    }
+
+    // Recherche finale des Ohabolana (inchangée)
+    const conceptsToSearch = aiAnalysis.concepts_abstraits_recherche || [];
+    const matchedProverbs = await findMatchingProverbs(conceptsToSearch);
+
+    return res.status(200).json({
+      success: true,
+      action: currentAction,
+      genre_litteraire: aiAnalysis.genre_litteraire,
+      methode_analyse_recommandee: aiAnalysis.methode_analyse_recommandee,
+      exegese: aiAnalysis.mots_cles_originaux || [],
+      theologie: aiAnalysis.cles_theologiques || [],
+      specificData: aiAnalysis.donnees_specifiques,
+      illustrations_malgaches: matchedProverbs
+    });
+
+  } catch (error) {
+    console.error("❌ Erreur serveur :", error);
+    return res.status(500).json({ success: false, message: "Erreur interne." });
   }
 });
 

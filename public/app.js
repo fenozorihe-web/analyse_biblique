@@ -13,6 +13,7 @@ const globalLoader = document.getElementById('globalLoader');
 
 // URL de votre API Backend Node.js
 const API_URL = '/api/items'; 
+const API_URL2 = '/api/items2'; 
 
 // Écouteur d'événement sur le bouton unique
 if (btnSubmitAction && actionSelect) {
@@ -39,6 +40,7 @@ if (btnSubmitAction && actionSelect) {
 
         try {
             // Appel AJAX vers votre serveur Express
+            if(currentAction === "predire"){API_URL=API_URL2}
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
