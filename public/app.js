@@ -12,8 +12,7 @@ const btnSubmitAction = document.getElementById('btnSubmitAction');
 const globalLoader = document.getElementById('globalLoader');
 
 // URL de votre API Backend Node.js
-const API_URL = '/api/items'; 
-const API_URL2 = '/api/items2'; 
+const API = '/api'; 
 
 // Écouteur d'événement sur le bouton unique
 if (btnSubmitAction && actionSelect) {
@@ -37,10 +36,15 @@ if (btnSubmitAction && actionSelect) {
         btnSubmitAction.classList.add('opacity-75', 'cursor-not-allowed');
         actionSelect.disabled = true; // Bloque aussi la liste pendant le traitement
         resultSection.classList.add('hidden');
-
+        let API_URL = ""
         try {
             // Appel AJAX vers votre serveur Express
-            if(selectedAction === "predire"){API_URL=API_URL2}
+            if (selectedAction === "predire") { API_URL = API + "/prediction" }
+            else if (selectedAction === "analyse") {
+                API_URL = API + "/analyse"
+            } else {
+                console.log("Il y a de problème dans la selection d'action.");
+            }
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {

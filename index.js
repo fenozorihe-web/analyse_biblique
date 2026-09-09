@@ -12,8 +12,8 @@ import { findMatchingProverbs } from "./src/searchEngine.js";
 import { findPericopeByText } from "./src/searchEngine.js";
 import { preachBibleText } from "./src/preacher.js";
 
-import { teachBibleText } from "./src/teacher.js";
-import { arrangeBibleText } from "./src/arranger.js";
+// import { teachBibleText } from "./src/teacher.js";
+// import { arrangeBibleText } from "./src/arranger.js";
 
 // Charger les variables d'environnement
 dotenv.config();
