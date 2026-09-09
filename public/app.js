@@ -40,7 +40,7 @@ if (btnSubmitAction && actionSelect) {
 
         try {
             // Appel AJAX vers votre serveur Express
-            if(currentAction === "predire"){API_URL=API_URL2}
+            if(selectedAction === "predire"){API_URL=API_URL2}
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
