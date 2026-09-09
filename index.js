@@ -33,7 +33,7 @@ mongoose.connect(process.env.MONGODB_URI)
 
 // === LA ROUTE EXPRESS COMPLETE ===
 //app.post("/api/analyze", async (req, res) => {
-app.post('/api/items', async (req, res) => {
+app.post('/api/analyse', async (req, res) => {
   try {
     // 1. Récupération du texte biblique envoyé par le Front-end
     const { userBibleText } = req.body;
@@ -82,7 +82,7 @@ app.post('/api/items', async (req, res) => {
   }
 });
 
-app.post('/api/items2', async (req, res) => {
+app.post('/api/prediction', async (req, res) => {
   try {
     const { userBibleText, actionRequested } = req.body;
     if (!userBibleText || userBibleText.trim() === "") {
