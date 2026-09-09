@@ -7,7 +7,7 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
 // Vérification de sécurité dans la console
 if (!process.env.GEMINI_API_KEY) {
-  console.error("❌ Alerte : GEMINI_API_KEY n'est pas lue par le fichier analyzer.js !");
+  console.error("❌ Alerte : GEMINI_API_KEY n'est pas lue par le fichier preacher.js !");
 }
 
 // Initialisation du client avec la clé d'environnement
@@ -15,13 +15,12 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 /**
  * Analyse un texte biblique avec le modèle Gemini-2.5-flash
- * @param {Object} ai - L'instance initialisée de GoogleGenAI
  * @param {string} text - Le verset ou texte biblique transmis par l'utilisateur
  * @param {Object|null} pericopeData - Les données liturgiques trouvées dans MongoDB
  * @returns {Promise<Object>} L'objet contenant le HTML formaté et les mots-clés
  */
 
-export async function preachBibleText(ai, text, pericopeData) {
+export async function preachBibleText(text, pericopeData) {
   
     // Préparation du contexte des lectures liturgiques s'il a été trouvé dans MongoDB
     let contextePericopePrompt = "L'utilisateur étudie ce texte de manière isolée.";
