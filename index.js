@@ -97,9 +97,10 @@ app.post('/api/prediction', async (req, res) => {
       console.log("🔍 Recherche des textes de la péricope associés dans MongoDB...");
       const pericopeData = await findPericopeByText(userBibleText);
       console.log("Le pericope est composé de:", pericopeData);
-      
+
       // On appelle le preacher en lui passant le texte de base ET la péricope trouvée
       resultPreacher = await preachBibleText(userBibleText, pericopeData);
+      console.log("le resultPreacher est:", resultPreacher);
     } else {
       // Vos autres embranchements (enseigner, arranger, analyser) restent identiques
       // ...

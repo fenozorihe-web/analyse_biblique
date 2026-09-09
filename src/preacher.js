@@ -104,7 +104,8 @@ export async function preachBibleText(userBibleText, pericopeData) {
 
     //Lecture correcte du format JSON retourné par Gemini
     const rawData = JSON.parse(response.text);
-    console.log("Le rawData est contitué par:", rawData);
+    // console.log("Le rawData est contitué par:", rawData);
+    
     // Construction HTML optimisé incluant l'interrelation des textes
     const htmlSermon = `
       <div class="space-y-6">
@@ -149,22 +150,22 @@ export async function preachBibleText(userBibleText, pericopeData) {
         </div>
       </div>
     `;
-
-        return {
-            success: true,
-            html: htmlSermon,
-            genre_litteraire: rawData.genre_litteraire || "Homilétique / Prédication",
-            interrelations_textes: rawData.interrelations_textes,
-            type_predication: rawData.type_predication,
-            theme_principal: rawData.theme_principal,
-            introduction: rawData.introduction,
-            points_principaux: rawData.points_principaux,
-            conclusion: rawData.conclusion
-            // motsCles: rawData.mots_cles_ohabolana || [],
-            // genre_litteraire: rawData.genre_litteraire || "Homilétique / Prédication",
-            // interrelations_textes: rawData.interrelations_textes,
-            // type_predication: rawData.type_predication
-        };
+    return htmlSermon
+        // return {
+        //     success: true,
+        //     html: htmlSermon,
+        //     genre_litteraire: rawData.genre_litteraire || "Homilétique / Prédication",
+        //     interrelations_textes: rawData.interrelations_textes,
+        //     type_predication: rawData.type_predication,
+        //     theme_principal: rawData.theme_principal,
+        //     introduction: rawData.introduction,
+        //     points_principaux: rawData.points_principaux,
+        //     conclusion: rawData.conclusion
+        //     // motsCles: rawData.mots_cles_ohabolana || [],
+        //     // genre_litteraire: rawData.genre_litteraire || "Homilétique / Prédication",
+        //     // interrelations_textes: rawData.interrelations_textes,
+        //     // type_predication: rawData.type_predication
+        // };
 
   } catch (error) {
     console.error("Erreur dans preacher.js :", error);
