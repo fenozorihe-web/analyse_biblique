@@ -2,6 +2,11 @@
 const bibleTextInput = document.getElementById('bibleText');
 const resultSection = document.getElementById('resultSection');
 
+// Les deux blocs d'interfaces exclusifs
+const sermonBlock = document.getElementById('sermonBlock');
+const sermonContainer = document.getElementById('sermonContainer');
+const analyserInterfaceBlock = document.getElementById('analyserInterfaceBlock');
+
 const exegeseContainer = document.getElementById('exegeseContainer');
 const theologieContainer = document.getElementById('theologieContainer');
 const proverbesContainer = document.getElementById('proverbesContainer');
@@ -31,7 +36,7 @@ if (btnSubmitAction && actionSelect) {
         const selectedAction = actionSelect.value; // Renvoie 'analyser', 'predire', 'enseigner' ou 'arranger'
 
         // 3. Configuration dynamique de la route selon la valeur exacte du select
-        let API_URL = "";
+        let API_URL; API_URL=""
         if (selectedAction === "predire") {
             API_URL = `${API}/prediction`;
         } else if (selectedAction === "analyser" || selectedAction === "analyse") {
@@ -55,6 +60,9 @@ if (btnSubmitAction && actionSelect) {
         btnSubmitAction.classList.add('opacity-75', 'cursor-not-allowed');
         actionSelect.disabled = true; // Bloque aussi la liste pendant le traitement
         resultSection.classList.add('hidden');
+        // On cache d'abord absolument tout par défaut
+        sermonBlock.classList.add('hidden');
+        analyserInterfaceBlock.classList.add('hidden');
 
         try {
             // Appel AJAX vers votre serveur Express
@@ -77,11 +85,17 @@ if (btnSubmitAction && actionSelect) {
 
             const data = await response.json();
             console.log("Données reçues du serveur :", data);
-
-            if (data.success) {
-                displayResults(data);
-            } else {
-                alert("Une erreur est survenue lors du traitement par le serveur.");
+            if (data.success){
+                if (selectedAction === "predire" && data.html){
+                    // MODE PRÉDICATION EXCLUSIF : On n'affiche que le bloc sermon 
+                    sermonContainer.innerHTML = data.html;
+                    sermonBlock.classList.remove('hidden');
+                }
+                else if (selectedAction === "analyser") {
+                    displayResults(data);
+                } else {
+                    alert("Une erreur est survenue lors du traitement par le serveur.");
+                }
             }
 
         } catch (error) {

@@ -89,7 +89,7 @@ app.post('/api/prediction', async (req, res) => {
       return res.status(400).json({ success: false, message: "Le texte est requis." });
     }
 
-    const currentAction = actionRequested || "analyser";
+    const currentAction = actionRequested;
     let aiAnalysis = null;
 
     if (currentAction === "predire") {

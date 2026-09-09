@@ -1,4 +1,5 @@
 import Proverb from "./models/Proverb.js";
+import Pericope from "./models/Pericope.js";
 
 /**
  * Recherche des ohabolana malgaches basés sur des concepts
@@ -24,5 +25,27 @@ export async function findMatchingProverbs(aiConcepts) {
   } catch (error) {
     console.error("Erreur dans searchEngine.js :", error);
     throw error;
+  }
+}
+
+/**
+ * Trouve la péricope complète contenant le texte recherché
+ */
+export async function findPericopeByText(userText) {
+  try {
+    // Exemple de recherche simple : on cherche si le texte utilisateur est mentionné 
+    // dans l'une des colonnes de lectures liturgiques de la BDD
+    const pericope = await Pericope.findOne({
+      $or: [
+        { ancien_testament: new RegExp(userText, "i") },
+        { epitre: new RegExp(userText, "i") },
+        { evangile: new RegExp(userText, "i") }
+      ]
+    });
+
+    return pericope || null;
+  } catch (error) {
+    console.error("Erreur lors de la recherche de la péricope :", error);
+    return null;
   }
 }

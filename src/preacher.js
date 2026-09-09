@@ -1,11 +1,13 @@
-import OpenAI from "openai";
+/**
+ * Analyse un texte biblique avec le modèle Gemini-2.5-flash
+ * @param {Object} ai - L'instance initialisée de GoogleGenAI
+ * @param {string} text - Le verset ou texte biblique transmis par l'utilisateur
+ * @param {Object|null} pericopeData - Les données liturgiques trouvées dans MongoDB
+ * @returns {Promise<Object>} L'objet contenant le HTML formaté et les mots-clés
+ */
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-export async function preachBibleText(text, pericopeData) {
-  try {
+export async function preachBibleText(ai, text, pericopeData) {
+  
     // Préparation du contexte des lectures liturgiques s'il a été trouvé dans MongoDB
     let contextePericopePrompt = "L'utilisateur étudie ce texte de manière isolée.";
     let detailsLecturesHtml = `<p class="text-xs text-slate-500 italic">Aucune péricope liturgique associée trouvée dans MongoDB pour ce texte.</p>`;
@@ -27,45 +29,67 @@ export async function preachBibleText(text, pericopeData) {
       `;
     }
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: `Tu es un professeur d'homilétique expert de la tradition liturgique ecclésiale et de la contextualisation malgache.
-          On va te fournir un texte à prêcher ainsi que les autres lectures de sa péricope. 
-          
-          Tu dois :
-          1. Expliquer brièvement les interrelations théologiques et logiques entre ces différents textes (comment ils se répondent).
-          2. Dégager un thème principal unifié pour la prédication.
-          3. Développer les points principaux du sermon (Ny ranony) avec des explications claires et contextuelles.
-          
-          Exporte le résultat au format JSON strict avec cette structure :
-          {
-            "genre_litteraire": "Prophétique, Évangile, Épître...",
-            "interrelations_textes": "Explication de la convergence théologique des textes de la péricope.",
-            "theme_principal": "Thème global du sermon",
-            "introduction": "Introduction du sermon (Fidirana)",
-            "points_principaux": [
-              { "titre": "Point 1", "explication": "Développement" },
-              { "titre": "Point 2", "explication": "Développement" }
-            ],
-            "conclusion": "Conclusion et application pratique (Famaranana)",
-            "cles_theologiques": ["Concept 1", "Concept 2"],
-            "mots_cles_pour_ohabolana": ["ConceptA", "ConceptB"]
-          }`
+    try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash", 
+      contents: `Predis le texte suivant : "${bibleText}"`,
+      config: {
+        temperature: 0.2, // Faible température pour garantir la rigueur académique
+        responseMimeType: "application/json",
+                // 1. MISE À JOUR DU SCHÉMA : Ajout des champs de genre et de méthode
+                responseSchema: {
+                    type: "object",
+                    properties: {
+                        genre_litteraire: { type: "string" },
+                        interrelations_textes: { type: "string" }, // Type string direct réaligné sur l'instruction
+                        type_predication: { type: "string" },
+                        theme_principal: { type: "string" },
+                        introduction: { type: "string" },
+                        mots_cles_ohabolana: { 
+                            type: "array", 
+                            items: { type: "string" },
+                            description: "Liste de 3 à 5 mots-clés en français pour chercher des proverbes malgaches correspondants" 
+                        },
+                        points_principaux: {
+                            type: "array",
+                            items: {
+                                type: "object",
+                                properties: {
+                                    titre: { type: "string" },
+                                    explication: { type: "string" },
+                                    messages: { type: "string" } 
+                                },
+                                required: ["titre", "explication", "messages"]
+                            }
+                        },
+                        conclusion: { type: "string" }
+                    },
+                    required: [
+                        "genre_litteraire", 
+                        "interrelations_textes", 
+                        "type_predication", 
+                        "theme_principal",
+                        "introduction",
+                        "mots_cles_ohabolana",
+                        "points_principaux", 
+                        "conclusion"
+                    ]
+                  },
+                  systemInstruction: `Tu es un professeur d'homilétique expert de la tradition liturgique ecclésiale et de la contextualisation malgache.
+                On va te fournir un texte à prêcher ainsi que les autres lectures de sa péricope.
+                Ton rôle est de rédiger le sermon pour le texte biblique selon son genre littéraire propre, et le type de prédication luthérienne convenable.
+                
+                Tu dois :
+                1. Expliquer brièvement les interrelations théologiques et logiques entre ces différents textes.
+                   Voici le texte ciblé par l'utilisateur : "${text}", et le contexte extrait de MongoDB : ${contextePericopePrompt}.
+                2. Dégager un thème principal unifié pour la prédication.
+                3. Générer un tableau de mots-clés simples ("mots_cles_ohabolana") pour trouver des correspondances de proverbes malgaches (ex: ["repentance", "sagesse"]).
+                4. Développer les points principaux du sermon avec des explications claires et contextuelles.`
         },
-        {
-          role: "user",
-          content: `Voici le texte ciblé par l'utilisateur : "${text}". 
-          Contexte de la péricope extrait de MongoDB : ${contextePericopePrompt}. 
-          Analyse l'harmonie de ces textes et prépare le sermon.`
-        }
-      ],
-      response_format: { type: "json_object" }
     });
 
-    const rawData = JSON.parse(response.choices.message.content);
+    //Lecture correcte du format JSON retourné par Gemini
+    const rawData = JSON.parse(response.text);
 
     // Construction HTML optimisé incluant l'interrelation des textes
     const htmlSermon = `
@@ -112,15 +136,18 @@ export async function preachBibleText(text, pericopeData) {
       </div>
     `;
 
-    return {
-      genre_litteraire: rawData.genre_litteraire || "Homilétique / Prédication",
-      methode_analyse_recommandee: "Analyse Homilétique Croisée",
-      cles_theologiques: rawData.cles_theologiques || [],
-      concepts_abstraits_recherche: rawData.mots_cles_pour_ohabolana || [],
-      donnees_specifiques: htmlSermon,
-      pertinence_canonique: { dans_le_livre: "Inclus dans l'analyse croisée", dans_le_canon: "Inclus dans l'analyse croisée" },
-      connexion_lutherienne: { articulation_doctrinale: "Générée dans le message", references_confessionnelles: "N/A" }
-    };
+        return {
+            // genre_litteraire: rawData.genre_litteraire || "Homilétique / Prédication",
+            // interrelations_textes: rawData.interrelations_textes,
+            // type_predication: rawData.type_predication,
+            // theme_principal: rawData.theme_principal,
+            // introduction: rawData.introduction,
+            // points_principaux: rawData.points_principaux,
+            // conclusion: rawData.conclusion
+            success: true,
+            html: htmlSermon,
+            motsCles: rawData.mots_cles_ohabolana || []
+        };
 
   } catch (error) {
     console.error("Erreur dans preacher.js :", error);
