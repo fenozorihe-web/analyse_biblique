@@ -19,7 +19,7 @@ if (btnSubmitAction && actionSelect) {
     btnSubmitAction.addEventListener('click', async () => {
         const textValue = bibleTextInput.value.trim();
         console.log("Le contenu à executer est:", textValue, "et le btnSubmitAction listener est entendu")
-        
+
         // 1. Validation de la saisie de texte
         if (!textValue) {
             alert("Veuillez introduire un texte biblique avant de lancer l'action.");
@@ -30,32 +30,50 @@ if (btnSubmitAction && actionSelect) {
         // 2. Récupération de l'action choisie dans la liste déroulante
         const selectedAction = actionSelect.value; // Renvoie 'analyser', 'predire', 'enseigner' ou 'arranger'
 
-        // 3. Activation de l'état de chargement graphique
+        // 3. Configuration dynamique de la route selon la valeur exacte du select
+        let API_URL = "";
+        if (selectedAction === "predire") {
+            API_URL = `${API}/prediction`;
+        } else if (selectedAction === "analyser" || selectedAction === "analyse") {
+            // Gère à la fois "analyser" et "analyse" pour éviter les bugs
+            API_URL = `${API}/analyse`;
+        } else if (selectedAction === "enseigner") {
+            API_URL = `${API}/enseignement`; // À adapter selon votre route backend
+        } else if (selectedAction === "arranger") {
+            API_URL = `${API}/arrangement`;   // À adapter selon votre route backend
+        }
+
+        if (!API_URL) {
+            console.error("Action inconnue ou non gérée :", selectedAction);
+            alert("Cette action n'est pas encore prise en charge par le serveur.");
+            return;
+        }
+
+        // 4. Activation de l'état de chargement graphique
         globalLoader.classList.remove('hidden');
         btnSubmitAction.disabled = true;
         btnSubmitAction.classList.add('opacity-75', 'cursor-not-allowed');
         actionSelect.disabled = true; // Bloque aussi la liste pendant le traitement
         resultSection.classList.add('hidden');
-        let API_URL = ""
+
         try {
             // Appel AJAX vers votre serveur Express
-            if (selectedAction === "predire") { API_URL = API + "/prediction" }
-            else if (selectedAction === "analyse") {
-                API_URL = API + "/analyse"
-            } else {
-                console.log("Il y a de problème dans la selection d'action.");
-            }
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 // Envoi des données dynamiques au serveur
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     userBibleText: textValue,
-                    actionRequested: selectedAction 
+                    actionRequested: selectedAction
                 })
             });
+
+            // Sécurité : On vérifie si le serveur a répondu par un statut d'erreur
+            if (!response.ok) {
+                throw new Error(`Erreur serveur avec le statut ${response.status}`);
+            }
 
             const data = await response.json();
             console.log("Données reçues du serveur :", data);
@@ -77,7 +95,7 @@ if (btnSubmitAction && actionSelect) {
             actionSelect.disabled = false;
         }
     });
-}else{
+} else {
     console.log("Le bouton n'est pas encore entendu");
 }
 
