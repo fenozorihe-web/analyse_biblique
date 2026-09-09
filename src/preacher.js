@@ -15,12 +15,12 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 /**
  * Analyse un texte biblique avec le modèle Gemini-2.5-flash
- * @param {string} bibleText - Le verset ou texte biblique transmis par l'utilisateur
+ * @param {string} userBibleText - Le verset ou texte biblique transmis par l'utilisateur
  * @param {Object|null} pericopeData - Les données liturgiques trouvées dans MongoDB
  * @returns {Promise<Object>} L'objet contenant le HTML formaté et les mots-clés
  */
 
-export async function preachBibleText(bibleText, pericopeData) {
+export async function preachBibleText(userBibleText, pericopeData) {
   
     // Préparation du contexte des lectures liturgiques s'il a été trouvé dans MongoDB
     let contextePericopePrompt = "L'utilisateur étudie ce texte de manière isolée.";
@@ -46,7 +46,7 @@ export async function preachBibleText(bibleText, pericopeData) {
     try {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash", 
-      contents: `Predique le texte suivant : "${bibleText}"`,
+      contents: `Predique le texte suivant : "${userBibleText}"`,
       config: {
         temperature: 0.2, // Faible température pour garantir la rigueur académique
         responseMimeType: "application/json",
@@ -151,19 +151,19 @@ export async function preachBibleText(bibleText, pericopeData) {
     `;
 
         return {
-            // genre_litteraire: rawData.genre_litteraire || "Homilétique / Prédication",
-            // interrelations_textes: rawData.interrelations_textes,
-            // type_predication: rawData.type_predication,
-            // theme_principal: rawData.theme_principal,
-            // introduction: rawData.introduction,
-            // points_principaux: rawData.points_principaux,
-            // conclusion: rawData.conclusion
             success: true,
             html: htmlSermon,
-            motsCles: rawData.mots_cles_ohabolana || [],
             genre_litteraire: rawData.genre_litteraire || "Homilétique / Prédication",
             interrelations_textes: rawData.interrelations_textes,
-            type_predication: rawData.type_predication
+            type_predication: rawData.type_predication,
+            theme_principal: rawData.theme_principal,
+            introduction: rawData.introduction,
+            points_principaux: rawData.points_principaux,
+            conclusion: rawData.conclusion
+            // motsCles: rawData.mots_cles_ohabolana || [],
+            // genre_litteraire: rawData.genre_litteraire || "Homilétique / Prédication",
+            // interrelations_textes: rawData.interrelations_textes,
+            // type_predication: rawData.type_predication
         };
 
   } catch (error) {
