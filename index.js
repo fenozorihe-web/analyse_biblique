@@ -96,7 +96,8 @@ app.post('/api/prediction', async (req, res) => {
       // ÉTAPE SPÉCIFIQUE : Rechercher d'abord les textes interconnectés de la péricope dans MongoDB
       console.log("🔍 Recherche des textes de la péricope associés dans MongoDB...");
       const pericopeData = await findPericopeByText(userBibleText);
-
+      console.log("Le pericope est composé de:", pericopeData);
+      
       // On appelle le preacher en lui passant le texte de base ET la péricope trouvée
       resultPreacher = await preachBibleText(userBibleText, pericopeData);
     } else {
