@@ -90,13 +90,34 @@ if (btnSubmitAction && actionSelect) {
             // ✅ Grâce au correctif backend, data.success et data.html sont lisibles directement !
             if (data.success) {
                 if (selectedAction === "predire") {
-                    // Injection directe du code HTML de preacher.js dans le conteneur dédié
+                    // 1. Injection du sermon
                     if (sermonContainer && data.html) {
                         sermonContainer.innerHTML = data.html;
                     }
                     
+                    // 2. Injection des proverbes spécifiques au sermon
+                    const provContainer = document.getElementById('proverbesSermonContainer');
+                    if (provContainer) {
+                        provContainer.innerHTML = ''; // Nettoyage
+                        if (data.illustrations_malgaches && data.illustrations_malgaches.length > 0) {
+                            data.illustrations_malgaches.forEach(prov => {
+                                const div = document.createElement('div');
+                                div.className = 'bg-orange-50/50 p-3 rounded-xl border border-orange-100';
+                                div.innerHTML = `
+                                    <p class="font-semibold text-orange-950 italic">« ${prov.proverbe_malagasy} »</p>
+                                    <p class="text-xs text-gray-500 mt-1">Traduction : ${prov.traduction_francaise}</p>
+                                `;
+                                provContainer.appendChild(div);
+                            });
+                            document.getElementById('sermonProverbesBlock').classList.remove('hidden');
+                        } else {
+                            // Masquer le bloc s'il n'y a aucun proverbe correspondant
+                            document.getElementById('sermonProverbesBlock').classList.add('hidden');
+                        }
+                    }
+                
+                    // 3. Affichage et défilement
                     if (sermonBlock) sermonBlock.classList.remove('hidden');
-                    
                     if (resultSection) {
                         resultSection.classList.remove('hidden');
                         resultSection.scrollIntoView({ behavior: 'smooth' });
@@ -126,193 +147,3 @@ if (btnSubmitAction && actionSelect) {
 } else {
     console.log("Le bouton n'est pas encore entendu");
 }
-
-/**
- * Injecte dynamiquement les données reçues pour l'analyse
- */
-
-// // Sélection des éléments de l'interface globale
-// const bibleTextInput = document.getElementById('bibleText');
-// const resultSection = document.getElementById('resultSection');
-
-// // Les deux blocs d'interfaces exclusifs
-// const sermonBlock = document.getElementById('sermonBlock');
-// const sermonContainer = document.getElementById('sermonContainer');
-// const analyserInterfaceBlock = document.getElementById('analyserInterfaceBlock');
-
-// const exegeseContainer = document.getElementById('exegeseContainer');
-// const theologieContainer = document.getElementById('theologieContainer');
-// const proverbesContainer = document.getElementById('proverbesContainer');
-
-// // Nouveaux éléments de l'interface (Liste et Bouton Unique)
-// const actionSelect = document.getElementById('actionSelect');
-// const btnSubmitAction = document.getElementById('btnSubmitAction');
-// const globalLoader = document.getElementById('globalLoader');
-
-// // URL de votre API Backend Node.js
-// const API = '/api'; 
-
-// // Écouteur d'événement sur le bouton unique
-// if (btnSubmitAction && actionSelect) {
-//     btnSubmitAction.addEventListener('click', async () => {
-//         const textValue = bibleTextInput.value.trim();
-//         console.log("Le contenu à executer est:", textValue, "et le btnSubmitAction listener est entendu")
-
-//         // 1. Validation de la saisie de texte
-//         if (!textValue) {
-//             alert("Veuillez introduire un texte biblique avant de lancer l'action.");
-//             bibleTextInput.focus();
-//             return;
-//         }
-
-//         // 2. Récupération de l'action choisie dans la liste déroulante
-//         const selectedAction = actionSelect.value; // Renvoie 'analyser', 'predire', 'enseigner' ou 'arranger'
-
-//         // 3. Configuration dynamique de la route selon la valeur exacte du select
-//         let API_URL; API_URL=""
-//         if (selectedAction === "predire") {
-//             API_URL = `${API}/prediction`;
-//         } else if (selectedAction === "analyser" || selectedAction === "analyse") {
-//             // Gère à la fois "analyser" et "analyse" pour éviter les bugs
-//             API_URL = `${API}/analyse`;
-//         } else if (selectedAction === "enseigner") {
-//             API_URL = `${API}/enseignement`; // À adapter selon votre route backend
-//         } else if (selectedAction === "arranger") {
-//             API_URL = `${API}/arrangement`;   // À adapter selon votre route backend
-//         }
-
-//         if (!API_URL) {
-//             console.error("Action inconnue ou non gérée :", selectedAction);
-//             alert("Cette action n'est pas encore prise en charge par le serveur.");
-//             return;
-//         }
-
-//         // 4. Activation de l'état de chargement graphique
-//         globalLoader.classList.remove('hidden');
-//         btnSubmitAction.disabled = true;
-//         btnSubmitAction.classList.add('opacity-75', 'cursor-not-allowed');
-//         actionSelect.disabled = true; // Bloque aussi la liste pendant le traitement
-//         resultSection.classList.add('hidden');
-//         // On cache d'abord absolument tout par défaut
-//         sermonBlock.classList.add('hidden');
-//         analyserInterfaceBlock.classList.add('hidden');
-
-//         try {
-//             // Appel AJAX vers votre serveur Express
-//             const response = await fetch(API_URL, {
-//                 method: 'POST',
-//                 headers: {
-//                     'Content-Type': 'application/json'
-//                 },
-//                 // Envoi des données dynamiques au serveur
-//                 body: JSON.stringify({
-//                     userBibleText: textValue,
-//                     actionRequested: selectedAction
-//                 })
-//             });
-
-//             // Sécurité : On vérifie si le serveur a répondu par un statut d'erreur
-//             if (!response.ok) {
-//                 throw new Error(`Erreur serveur avec le statut ${response.status}`);
-//             }
-
-//             const data = await response.json();
-//             console.log("Données reçues du serveur :", data);
-//             if (data.success){
-//                 if (selectedAction === "predire" && data.html){
-//                     // MODE PRÉDICATION EXCLUSIF : On n'affiche que le bloc sermon 
-//                     sermonContainer.innerHTML = data.html;
-//                     sermonBlock.classList.remove('hidden');
-//                 }
-//                 else if (selectedAction === "analyser") {
-//                     displayResults(data);
-//                 } else {
-//                     alert("Une erreur est survenue lors du traitement par le serveur.");
-//                 }
-//             }
-
-//         } catch (error) {
-//             console.error("Erreur de connexion avec le backend :", error);
-//             alert("Impossible de joindre le serveur backend.");
-//         } finally {
-//             // 4. Désactivation de l'état de chargement
-//             globalLoader.classList.add('hidden');
-//             btnSubmitAction.disabled = false;
-//             btnSubmitAction.classList.remove('opacity-75', 'cursor-not-allowed');
-//             actionSelect.disabled = false;
-//         }
-//     });
-// } else {
-//     console.log("Le bouton n'est pas encore entendu");
-// }
-
-// /**
-//  * Injecte dynamiquement les données reçues (Inchangée mais sécurisée)
-//  */
-// function displayResults(data) {
-//     const genreElement = document.getElementById('genreLittéraire');
-//     const methodeElement = document.getElementById('methodeAnalyse');
-
-//     if (genreElement) genreElement.innerHTML = `Genre : ${data.genre_litteraire || 'Non spécifié'}`;
-//     if (methodeElement) methodeElement.innerHTML = data.methode_analyse_recommandee || '';
-    
-//     if (exegeseContainer) exegeseContainer.innerHTML = '';
-//     if (theologieContainer) theologieContainer.innerHTML = '';
-//     if (proverbesContainer) proverbesContainer.innerHTML = '';
-
-//     if (exegeseContainer && data.exegese) {
-//         data.exegese.forEach(item => {
-//             const wordDiv = document.createElement('div');
-//             wordDiv.className = 'border-b border-gray-100 pb-3 last:border-0';
-//             wordDiv.innerHTML = `
-//                 <p class="font-bold text-slate-900 text-base">${item.mot} <span class="text-xs text-blue-600 font-normal italic bg-blue-50 px-2 py-0.5 rounded ml-1">${item.transliteration || ''}</span></p>
-//                 <p class="text-xs text-gray-600 mt-1 leading-relaxed">${item.sens_selon_methode}</p>
-//             `;
-//             exegeseContainer.appendChild(wordDiv);
-//         });
-//     }
-
-//     if (theologieContainer && data.theologie) {
-//         data.theologie.forEach(concept => {
-//             const li = document.createElement('li');
-//             li.className = 'leading-relaxed';
-//             li.textContent = concept;
-//             theologieContainer.appendChild(li);
-//         });
-//     }
-
-//     const canonLivre = document.getElementById('canonLivre');
-//     const canonGlobal = document.getElementById('canonGlobal');
-//     const lutherDoctrinale = document.getElementById('lutherDoctrinale');
-//     const lutherConfession = document.getElementById('lutherConfession');
-
-//     if (canonLivre && data.pertinence_canonique) canonLivre.textContent = data.pertinence_canonique.dans_le_livre;
-//     if (canonGlobal && data.pertinence_canonique) canonGlobal.textContent = data.pertinence_canonique.dans_le_canon;
-//     if (lutherDoctrinale && data.connexion_lutherienne) lutherDoctrinale.textContent = data.connexion_lutherienne.articulation_doctrinale;
-//     if (lutherConfession && data.connexion_lutherienne) lutherConfession.textContent = data.connexion_lutherienne.references_confessionnelles;
-
-//     if (proverbesContainer) {
-//         if (!data.illustrations_malgaches || data.illustrations_malgaches.length === 0) {
-//             proverbesContainer.innerHTML = `
-//                 <div class="text-center py-6 text-gray-400 italic">
-//                     Aucun ohabolana correspondant trouvé dans votre livre numérique pour ces thèmes.
-//                 </div>`;
-//         } else {
-//             data.illustrations_malgaches.forEach(prov => {
-//                 const provDiv = document.createElement('div');
-//                 provDiv.className = 'bg-white p-3 rounded-lg border border-orange-200/60 shadow-sm space-y-2';
-//                 provDiv.innerHTML = `
-//                     <p class="font-semibold text-orange-950 italic text-sm">« ${prov.proverbe_malagasy} »</p>
-//                     <p class="text-xs text-gray-500 font-medium border-l-2 border-gray-300 pl-2">Traduction : ${prov.traduction_francaise}</p>
-//                     <p class="text-xs text-gray-700 bg-orange-50/50 p-2 rounded border border-orange-100/70 leading-relaxed">${prov.explication_culturelle}</p>
-//                 `;
-//                 proverbesContainer.appendChild(provDiv);
-//             });
-//         }
-//     }
-
-//     if (resultSection) {
-//         resultSection.classList.remove('hidden');
-//         resultSection.scrollIntoView({ behavior: 'smooth' });
-//     }
-// }
