@@ -87,19 +87,24 @@ if (btnSubmitAction && actionSelect) {
             const data = await response.json();
             console.log("Données reçues du serveur :", data);
             
+            // ✅ Grâce au correctif backend, data.success et data.html sont lisibles directement !
             if (data.success) {
                 if (selectedAction === "predire") {
-                    // ✅ CORRECTION 2 : Activation du mode Prédication Exclusive
-                    displayPredication (data)
-                    sermonBlock.classList.remove('hidden');
+                    // Injection directe du code HTML de preacher.js dans le conteneur dédié
+                    if (sermonContainer && data.html) {
+                        sermonContainer.innerHTML = data.html;
+                    }
+                    
+                    if (sermonBlock) sermonBlock.classList.remove('hidden');
                     
                     if (resultSection) {
                         resultSection.classList.remove('hidden');
                         resultSection.scrollIntoView({ behavior: 'smooth' });
                     }
                 }
-                else if (selectedAction === "analyser") {
-                    displayAnalyse(data);
+                else if (selectedAction === "analyser" || selectedAction === "analyse") {
+                    // Appelle votre fonction existante (assurez-vous qu'elle s'appelle bien displayAnalyse ou displayResults)
+                        displayAnalyse(data)
                 } else {
                     alert("Résultats reçus pour une action non gérée graphiquement.");
                 }

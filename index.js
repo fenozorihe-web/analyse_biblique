@@ -90,45 +90,32 @@ app.post('/api/prediction', async (req, res) => {
     }
 
     const currentAction = actionRequested;
-    let aiAnalysis = null;
+    let resultPreacher = null; // ✅ Ajout du let indispensable pour éviter le crash
 
     if (currentAction === "predire") {
-      // ÉTAPE SPÉCIFIQUE : Rechercher d'abord les textes interconnectés de la péricope dans MongoDB
       console.log("🔍 Recherche des textes de la péricope associés dans MongoDB...");
       const pericopeData = await findPericopeByText(userBibleText);
       console.log("Le pericope est composé de:", pericopeData);
 
-      // On appelle le preacher en lui passant le texte de base ET la péricope trouvée
+      // Appel du module autonome preacher.js
       resultPreacher = await preachBibleText(userBibleText, pericopeData);
-      console.log("le resultPreacher est:", resultPreacher);
+      console.log("Le resultPreacher est:", resultPreacher);
     } else {
-      // Vos autres embranchements (enseigner, arranger, analyser) restent identiques
-      // ...
+      return res.status(400).json({ success: false, message: "Action non prise en charge sur cette route." });
     }
 
-    // const conceptsToSearch = resultPreacher.motsCles || [];
-    // console.log(`🔍 Mots-clés extraits (Preacher) pour MongoDB : [${conceptsToSearch.join(", ")}]`);
-
-    // console.log("🍃 Recherche des ohabolana correspondants dans MongoDB...");
-    // const matchedProverbs = await findMatchingProverbs(conceptsToSearch);
-
+    // ✅ On extrait et on aplatit les propriétés pour que le frontend lise directement data.success et data.html
     return res.status(200).json({
-      resultPreacher
-      // success: true,
-      // action: currentAction,
-      // genre_litteraire: resultPreacher.genre_litteraire,
-      // interrelations_textes: resultPreacher.interrelations_textes,
-      // type_predication: resultPreacher.type_predication,
-      // theme_principal: resultPreacher.theme_principal,
-      // introduction: resultPreacher.introduction,
-      // points_principaux: resultPreacher.points_principaux,
-      // conclusion: resultPreacher.conclusion,
-      // illustrations_malgaches: matchedProverbs
+      success: resultPreacher.success,
+      html: resultPreacher.html,
+      genre_litteraire: resultPreacher.genre_litteraire,
+      interrelations_textes: resultPreacher.interrelations_textes,
+      type_predication: resultPreacher.type_predication
     });
 
   } catch (error) {
     console.error("❌ Erreur serveur :", error);
-    return res.status(500).json({ success: false, message: "Erreur interne." });
+    return res.status(500).json({ success: false, message: "Erreur interne lors de la génération du sermon." });
   }
 });
 
