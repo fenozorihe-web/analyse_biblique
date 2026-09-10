@@ -1,5 +1,5 @@
 import Proverb from "./models/Proverb.js";
-import Pericope from "models/Pericope.js";
+import Pericope from "./models/Pericope.js"; // ✅ CORRECTION : Ajout de "./"
 
 /**
  * Recherche des ohabolana malgaches basés sur des concepts clés
