@@ -105,7 +105,7 @@ export async function preachBibleText(userBibleText, pericopeData) {
     });
     //Lecture correcte du format JSON retourné par Gemini
     const rawData = JSON.parse(response.text);
-    // console.log("Le rawData est contitué par:", rawData);
+    console.log("Le rawData est contitué par:", rawData);
     
     return rawData
 
