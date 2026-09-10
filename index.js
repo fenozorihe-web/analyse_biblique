@@ -85,37 +85,50 @@ app.post('/api/analyse', async (req, res) => {
 app.post('/api/prediction', async (req, res) => {
   try {
     const { userBibleText, actionRequested } = req.body;
+    
+    // 1. Validation de sécurité de l'entrée
     if (!userBibleText || userBibleText.trim() === "") {
-      return res.status(400).json({ success: false, message: "Le texte est requis." });
+      return res.status(400).json({ success: false, message: "Le texte biblique est requis." });
     }
 
     const currentAction = actionRequested;
-    let resultPreacher = null; // ✅ Ajout du let indispensable pour éviter le crash
+    let resultPreacher = null;
 
     if (currentAction === "predire") {
       console.log("🔍 Recherche des textes de la péricope associés dans MongoDB...");
       const pericopeData = await findPericopeByText(userBibleText);
-      console.log("Le pericope est composé de:", pericopeData);
+      console.log("Le pericope extrait est composé de :", pericopeData);
 
-      // Appel du module autonome preacher.js
+      console.log("🤖 Appel du module de génération homilétique (preacher.js)...");
       resultPreacher = await preachBibleText(userBibleText, pericopeData);
-      console.log("Le resultPreacher est:", resultPreacher);
     } else {
       return res.status(400).json({ success: false, message: "Action non prise en charge sur cette route." });
     }
 
-    // ✅ On extrait et on aplatit les propriétés pour que le frontend lise directement data.success et data.html
+    // 2. ÉTAPE DE LIAISON CRUCIALE : Récupération automatique des ohabolana correspondants
+    const conceptsToSearch = resultPreacher.motsCles || [];
+    console.log(`🍃 Recherche dans MongoDB des Ohabolana liés aux thèmes : [${conceptsToSearch.join(", ")}]`);
+    
+    const matchedProverbs = await findMatchingProverbs(conceptsToSearch);
+    console.log(`📦 ${matchedProverbs.length} proverbe(s) malgache(s) trouvé(s) pour le sermon.`);
+
+    // 3. ENVOI DE L'OBJET GLOBAL STRUCTURÉ AU FRONTEND
     return res.status(200).json({
-      success: resultPreacher.success,
-      html: resultPreacher.html,
+      success: true, // Garantit le passage de la condition if(data.success) du front
+      action: currentAction,
+      html: resultPreacher.html, 
       genre_litteraire: resultPreacher.genre_litteraire,
       interrelations_textes: resultPreacher.interrelations_textes,
-      type_predication: resultPreacher.type_predication
+      type_predication: resultPreacher.type_predication,
+      illustrations_malgaches: matchedProverbs // Jointure réussie !
     });
 
   } catch (error) {
-    console.error("❌ Erreur serveur :", error);
-    return res.status(500).json({ success: false, message: "Erreur interne lors de la génération du sermon." });
+    console.error("❌ Erreur critique sur la route /api/prediction :", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: "Une erreur interne est survenue lors de la génération homilétique." 
+    });
   }
 });
 
