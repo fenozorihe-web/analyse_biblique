@@ -1,5 +1,6 @@
 import {displayAnalyse} from "./fonctions.js"
-import {displayPredication} from "./fonctions.js"
+// import {displayPredication} from "./fonctions.js"
+import { getAjoutPericopeTemplate } from "./ajoutApp.js";
 
 // Sélection des éléments de l'interface globale
 const bibleTextInput = document.getElementById('bibleText');
@@ -43,24 +44,27 @@ if (btnToggleAdmin && adminBlock && formContainer) {
         adminBlock.classList.remove('hidden');
         btnToggleAdmin.textContent = "❌ Fermer l'Administration";
 
-        try {
-            // Appel vers votre route GET pour récupérer le template HTML
-            const response = await fetch(`${API}/ajoutPericope`);
-            const data = await response.json();
+        const template = getAjoutPericopeTemplate()
+        formContainer.innerHTML = template;
 
-            if (data.success && data.html) {
-                // Injection dynamique du code HTML du formulaire
-                formContainer.innerHTML = data.html;
+        // try {
+        //     // Appel vers votre route GET pour récupérer le template HTML
+        //     const response = await fetch(`${API}/ajoutPericope`);
+        //     const data = await response.json();
+
+        //     if (data.success && data.html) {
+        //         // Injection dynamique du code HTML du formulaire
+        //         formContainer.innerHTML = data.html;
                 
-                // Activation des écouteurs sur le nouveau formulaire injecté
-                setupPericopeFormListener();
-            } else {
-                formContainer.innerHTML = `<p class="text-red-500 font-medium">Erreur lors de la génération du formulaire.</p>`;
-            }
-        } catch (error) {
-            console.error("Erreur d'appel formulaire :", error);
-            formContainer.innerHTML = `<p class="text-red-500 font-medium">Impossible de joindre le serveur.</p>`;
-        }
+        //         // Activation des écouteurs sur le nouveau formulaire injecté
+        //         setupPericopeFormListener();
+        //     } else {
+        //         formContainer.innerHTML = `<p class="text-red-500 font-medium">Erreur lors de la génération du formulaire.</p>`;
+        //     }
+        // } catch (error) {
+        //     console.error("Erreur d'appel formulaire :", error);
+        //     formContainer.innerHTML = `<p class="text-red-500 font-medium">Impossible de joindre le serveur.</p>`;
+        // }
     });
 }
 
