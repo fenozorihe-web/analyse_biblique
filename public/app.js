@@ -33,6 +33,8 @@ const API = '/api';
 // ==========================================
 if (btnToggleAdmin && adminBlock && formContainer) {
     btnToggleAdmin.addEventListener('click', async () => {
+
+        console.log("L'addEventListener est maintenant entendu.");
         // Si l'interface d'administration est déjà ouverte, on la ferme au clic
         if (!adminBlock.classList.contains('hidden')) {
             adminBlock.classList.add('hidden');
@@ -45,6 +47,8 @@ if (btnToggleAdmin && adminBlock && formContainer) {
         btnToggleAdmin.textContent = "❌ Fermer l'Administration";
 
         const template = getAjoutPericopeTemplate()
+        console.log(template);
+
         formContainer.innerHTML = template;
 
         // try {
