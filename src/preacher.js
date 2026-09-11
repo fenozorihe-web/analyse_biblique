@@ -20,24 +20,43 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
  * @returns {Promise<Object>} L'objet contenant le HTML formaté et les mots-clés
  */
 export async function preachBibleText(userBibleText, pericopeData) {
+    
+  // Préparation du contexte des lectures liturgiques s'il a été trouvé dans MongoDB
+  let contextePericopePrompt = "L'utilisateur étudie ce texte de manière isolée.";
+  let detailsLecturesHtml = `<p class="text-xs text-slate-500 italic">Aucune péricope liturgique associée trouvée dans MongoDB pour ce texte.</p>`;
   
-    // Préparation du contexte des lectures liturgiques s'il a été trouvé dans MongoDB
-    let contextePericopePrompt = "L'utilisateur étudie ce texte de manière isolée.";
-    let detailsLecturesHtml = `<p class="text-xs text-slate-500 italic">Aucune péricope liturgique associée trouvée dans MongoDB pour ce texte.</p>`;
 
     if (pericopeData) {
+
+      let epitre = "", evangile = ""
+      if(userBibleText===pericopeData.evangile_1){
+        epitre = pericopeData.epitre_1,
+        evangile = pericopeData.evangile_2
+
+      } else if (userBibleText===pericopeData.evangile_2){
+        epitre = pericopeData.epitre_2,
+        evangile = pericopeData.evangile_3
+  
+      } else if (userBibleText===pericopeData.evangile_3){
+        epitre = pericopeData.epitre_3,
+        evangile = pericopeData.evangile_1
+  
+      } else{
+        epitre="", evangile=""
+      }
+
       contextePericopePrompt = `Ce texte fait partie d'une péricope liturgique complète pour le jour : "${pericopeData.dimanche_ou_fete}".
       Les textes associés officiels dans la base MongoDB sont :
       - Ancien Testament : ${pericopeData.ancien_testament}
-      - Épître : ${pericopeData.epitre}
-      - Évangile : ${pericopeData.evangile}`;
+      - Épître : ${epitre}
+      - Évangile : ${evangile}`;
 
       detailsLecturesHtml = `
         <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 text-xs space-y-1 text-slate-700">
           <p class="font-bold text-slate-900 mb-1">📅 Lectures de la Péricope (${pericopeData.dimanche_ou_fete}) :</p>
           <p>📖 <strong>Ancien Testament :</strong> ${pericopeData.ancien_testament || "Non spécifié"}</p>
-          <p>✉️ <strong>Épître :</strong> ${pericopeData.epitre || "Non spécifié"}</p>
-          <p>⛪ <strong>Évangile :</strong> ${pericopeData.evangile || "Non spécifié"}</p>
+          <p>✉️ <strong>Épître :</strong> ${epitre || "Non spécifié"}</p>
+          <p>⛪ <strong>Évangile :</strong> ${evangile || "Non spécifié"}</p>
         </div>
       `;
     }

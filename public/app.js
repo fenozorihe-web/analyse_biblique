@@ -74,8 +74,12 @@ function setupPericopeFormListener() {
             const payload = {
                 dimanche_ou_fete: document.getElementById("dimanche_ou_fete").value.trim(),
                 ancien_testament: document.getElementById("ancien_testament").value.trim(),
-                epitre: document.getElementById("epitre").value.trim(),
-                evangile: document.getElementById("evangile").value.trim()
+                epitre_1: document.getElementById("epitre_1").value.trim(),
+                epitre_2: document.getElementById("epitre_2").value.trim(),
+                epitre_3: document.getElementById("epitre_3").value.trim(),
+                evangile_1: document.getElementById("evangile_1").value.trim(),
+                evangile_2: document.getElementById("evangile_2").value.trim(),
+                evangile_3: document.getElementById("evangile_3").value.trim()
             };
 
             // Blocage graphique du formulaire pendant le traitement

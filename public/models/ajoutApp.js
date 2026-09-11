@@ -101,17 +101,29 @@ export function getAjoutPericopeTemplate() {
               <!-- Épître -->
               <div class="flex flex-col gap-1.5">
                   <label for="epitre" class="text-sm font-semibold text-slate-700">Lecture de l'Épître</label>
-                  <input type="text" id="epitre" required
+                  <input type="text" id="epitre_1" required
                       class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
                       placeholder="Ex: Romains 13:11-14">
+                  <input type="text" id="epitre_2" required
+                      class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
+                      placeholder="Ex: Apokalypse 3:20-22">
+                  <input type="text" id="epitre_3" required
+                      class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
+                      placeholder="Ex: Jeremie 31: 31-34">
               </div>
   
               <!-- Évangile -->
               <div class="flex flex-col gap-1.5">
                   <label for="evangile" class="text-sm font-semibold text-slate-700">Lecture de l'Évangile</label>
-                  <input type="text" id="evangile" required
+                  <input type="text" id="evangile_1" required
                       class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
-                      placeholder="Ex: Matthieu 24:36-44">
+                      placeholder="Ex: Matthieu 21:1-9">
+                  <input type="text" id="evangile_2" required
+                      class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
+                      placeholder="Ex: Jean 18:33-37">
+                  <input type="text" id="evangile_3" required
+                      class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
+                      placeholder="Ex: Luc 4:16-22">
               </div>
   
               <!-- Bouton de soumission -->

@@ -13,7 +13,7 @@ import { findPericopeByText } from "./src/searchEngine.js";
 import { preachBibleText } from "./src/preacher.js";
 
 // ✅ NOUVEAUX IMPORTS POUR LA PERICOPE
-import { getAjoutPericopeTemplate, insertPericope } from "./src/ajoutPericope.js";
+import { insertPericope } from "./src/ajoutPericope.js";
 
 // import { teachBibleText } from "./src/teacher.js";
 // import { arrangeBibleText } from "./src/arranger.js";
@@ -135,22 +135,24 @@ app.post('/api/prediction', async (req, res) => {
   }
 });
 
-// ✅ ROUTE 1 : Envoyer le modèle HTML brut au Frontend
-app.get('/api/ajoutPericope', (req, res) => {
-  const template = getAjoutPericopeTemplate();
-  return res.status(200).json({ success: true, html: template });
-});
-
-// ✅ ROUTE 2 : Réceptionner et enregistrer les données du formulaire
+// ✅ ROUTE 1 : Réceptionner et enregistrer les données du formulaire
 app.post('/api/ajoutPericope', async (req, res) => {
   try {
-    const { dimanche_ou_fete, ancien_testament, epitre, evangile } = req.body;
+    const { dimanche_ou_fete, ancien_testament, 
+      epitre_1, epitre_2, epitre_3,
+      evangile_1, evangile_2, evangile_3 } = req.body;
 
-    if (!dimanche_ou_fete || !ancien_testament || !epitre || !evangile) {
+    if (!dimanche_ou_fete || !ancien_testament 
+      || !epitre_1 || !epitre_2 || !epitre_3
+      || !evangile_1 || !evangile_2 || !evangile_3) {
       return res.status(400).json({ success: false, message: "Tous les champs sont obligatoires." });
     }
 
-    const result = await insertPericope({ dimanche_ou_fete, ancien_testament, epitre, evangile });
+    const result = await insertPericope({ 
+      dimanche_ou_fete, ancien_testament, 
+      epitre_1, epitre_2, epitre_3,
+      evangile_1, evangile_2, evangile_3
+    });
     return res.status(200).json(result);
 
   } catch (error) {
