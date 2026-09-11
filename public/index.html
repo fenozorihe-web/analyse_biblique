@@ -35,14 +35,29 @@
             <p class="text-lg md:text-xl text-blue-100 max-w-3xl mx-auto">
                 Exégèse biblique, réflexion théologique, et herméneutique malagasy.
             </p>
+            <div class="btnHeader">
+                <!-- Nav ou Header : Ajoutez ce bouton en haut à droite de votre interface -->
+                <div class="max-w-7xl mx-auto px-4 pt-4 flex justify-end">
+                    <button id="btnToggleAdmin"
+                        class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition shadow">
+                        ⚙️ Gérer les Péricopes
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-4 md:px-6 py-10">
-
+    
+        <!-- CONTENEUR D'INJECTION DU FORMULAIRE D'AJOUT -->
+        <!-- Placez ce bloc juste au-dessus de la balise <main> ou avant votre formulaire existant -->
+        <section id="adminBlock" class="hidden max-w-7xl mx-auto px-4 md:px-6 mb-8">
+            <div id="formContainer"></div>
+        </section>
+    
         <!-- FORMULAIRE -->
         <section class="bg-white rounded-2xl shadow-lg p-8 mb-8 flex flex-col gap-6">
-        
+    
             <!-- En-tête -->
             <div>
                 <h2 class="text-2xl font-bold text-slate-900 mb-1">
@@ -52,7 +67,7 @@
                     Sélectionnez une action après avoir collé votre texte.
                 </p>
             </div>
-        
+    
             <!-- Zone de saisie -->
             <div class="flex flex-col gap-2">
                 <label for="bibleText" class="text-sm font-semibold text-slate-700">
@@ -62,10 +77,10 @@
                     class="w-full border border-slate-300 rounded-xl p-4 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition resize-y"
                     placeholder="Exemple : Matthieu 5:9 ou collez ici votre texte biblique complet..."></textarea>
             </div>
-        
+    
             <!-- Actions / Liste déroulante et Bouton Unique -->
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
-        
+    
                 <!-- Liste déroulante -->
                 <div class="flex-1 flex flex-col gap-2">
                     <label for="actionSelect" class="text-sm font-semibold text-slate-700">
@@ -79,7 +94,7 @@
                         <option value="arranger">✨ Arranger le texte (Agencement)</option>
                     </select>
                 </div>
-        
+    
                 <!-- Bouton de validation unique -->
                 <div class="flex flex-col justify-end pt-7">
                     <button id="btnSubmitAction"
@@ -90,20 +105,20 @@
                         </div>
                     </button>
                 </div>
-        
+    
             </div>
-        
+    
         </section>
-
+    
         <!-- CONTENEUR GLOBAL DES RÉSULTATS -->
         <section id="resultSection" class="hidden space-y-8">
-        
+    
             <!-- INTERFACE ACTION = "PREDIRE" (UNIQUEMENT DU SERMON HTML HÉRITÉ DE PREACHER.JS) -->
             <div id="sermonBlock" class="hidden bg-white rounded-2xl p-8 shadow-md border border-indigo-100">
                 <h3 class="text-2xl font-bold text-indigo-900 mb-6 flex items-center gap-2 border-b pb-3">
                     ⛪ Structure de la Prédication Contextuelle
                 </h3>
-            
+    
                 <!-- Laissez ce conteneur totalement vide. data.html va s'injecter ici avec son propre design complet -->
                 <div id="sermonContainer" class="prose max-w-none text-slate-800"></div>
                 <!-- 🇲🇬 ZONE OPTIONNELLE : Pour afficher les Ohabolana liés au sermon -->
@@ -114,7 +129,7 @@
                     </div>
                 </div>
             </div>
-        
+    
             <!-- INTERFACE ACTION = "ANALYSER" (ANALYSE CLASSIQUE COMPLÈTE) -->
             <div id="analyserInterfaceBlock" class="hidden space-y-8">
                 <!-- RAPPORT -->
@@ -132,7 +147,7 @@
                         </div>
                     </div>
                 </div>
-        
+    
                 <!-- 3 BLOCS EN GRILLE -->
                 <div class="grid lg:grid-cols-3 gap-6">
                     <!-- EXÉGÈSE -->
@@ -140,20 +155,20 @@
                         <h3 class="text-xl font-bold text-blue-800 mb-4">🔍 Étude Lexicale</h3>
                         <div id="exegeseContainer" class="space-y-4 text-sm"></div>
                     </div>
-        
+    
                     <!-- THÉOLOGIE -->
                     <div id="theologie" class="bg-white rounded-2xl p-6 shadow-md card-hover">
                         <h3 class="text-xl font-bold text-emerald-800 mb-4">⚖️ Clés Théologiques</h3>
                         <ul id="theologieContainer" class="list-disc list-inside space-y-2 text-sm"></ul>
                     </div>
-        
+    
                     <!-- CONTEXTE MALAGASY -->
                     <div id="contexte" class="bg-orange-50 rounded-2xl p-6 shadow-md border border-orange-100 card-hover">
                         <h3 class="text-xl font-bold text-orange-800 mb-4">🇲🇬 Ohabolana & Contextualisation</h3>
                         <div id="proverbesContainer" class="space-y-4 text-sm"></div>
                     </div>
                 </div>
-        
+    
                 <!-- PORTÉE CANONIQUE -->
                 <div class="grid md:grid-cols-2 gap-6">
                     <div class="bg-blue-50 rounded-2xl p-6 border border-blue-100 shadow-sm card-hover">
@@ -173,13 +188,13 @@
                     <p id="lutherConfession" class="text-sm text-gray-700"></p>
                 </div>
             </div>
-        
+    
         </section>
-
+    
         </div>
-
-    </section>
-
+    
+        </section>
+    
     </main>
     <script src="app.js"></script>
     <script src="fonctions.js"></script>

@@ -12,6 +12,9 @@ import { findMatchingProverbs } from "./src/searchEngine.js";
 import { findPericopeByText } from "./src/searchEngine.js";
 import { preachBibleText } from "./src/preacher.js";
 
+// ✅ NOUVEAUX IMPORTS POUR LA PERICOPE
+import { getAjoutPericopeTemplate, insertPericope } from "./src/ajoutPericope.js";
+
 // import { teachBibleText } from "./src/teacher.js";
 // import { arrangeBibleText } from "./src/arranger.js";
 
@@ -128,6 +131,33 @@ app.post('/api/prediction', async (req, res) => {
     return res.status(500).json({ 
       success: false, 
       message: "Une erreur interne est survenue lors de la génération homilétique." 
+    });
+  }
+});
+
+// ✅ ROUTE 1 : Envoyer le modèle HTML brut au Frontend
+app.get('/api/ajoutPericope', (req, res) => {
+  const template = getAjoutPericopeTemplate();
+  return res.status(200).json({ success: true, html: template });
+});
+
+// ✅ ROUTE 2 : Réceptionner et enregistrer les données du formulaire
+app.post('/api/ajoutPericope', async (req, res) => {
+  try {
+    const { dimanche_ou_fete, ancien_testament, epitre, evangile } = req.body;
+
+    if (!dimanche_ou_fete || !ancien_testament || !epitre || !evangile) {
+      return res.status(400).json({ success: false, message: "Tous les champs sont obligatoires." });
+    }
+
+    const result = await insertPericope({ dimanche_ou_fete, ancien_testament, epitre, evangile });
+    return res.status(200).json(result);
+
+  } catch (error) {
+    console.error("❌ Erreur critique sur la route /api/ajoutPericope :", error); //
+    return res.status(500).json({ 
+      success: false, 
+      message: "Une erreur interne est survenue lors de l'importation de la péricope." //
     });
   }
 });

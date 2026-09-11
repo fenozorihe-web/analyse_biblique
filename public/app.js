@@ -19,10 +19,111 @@ const actionSelect = document.getElementById('actionSelect');
 const btnSubmitAction = document.getElementById('btnSubmitAction');
 const globalLoader = document.getElementById('globalLoader');
 
+// Nouveaux éléments pour la gestion de l'administration des péricopes
+const btnToggleAdmin = document.getElementById('btnToggleAdmin');
+const adminBlock = document.getElementById('adminBlock');
+const formContainer = document.getElementById('formContainer');
+
 // URL de votre API Backend Node.js
 const API = '/api'; 
 
-// Écouteur d'événement sur le bouton unique
+// ==========================================
+// ⚙️ GESTION DU BOUTON ET DU FORMULAIRE D'AJOUT
+// ==========================================
+if (btnToggleAdmin && adminBlock && formContainer) {
+    btnToggleAdmin.addEventListener('click', async () => {
+        // Si l'interface d'administration est déjà ouverte, on la ferme au clic
+        if (!adminBlock.classList.contains('hidden')) {
+            adminBlock.classList.add('hidden');
+            btnToggleAdmin.textContent = "⚙️ Gérer les Péricopes";
+            return;
+        }
+
+        formContainer.innerHTML = `<p class="text-center text-slate-400 italic py-4">Chargement du formulaire...</p>`;
+        adminBlock.classList.remove('hidden');
+        btnToggleAdmin.textContent = "❌ Fermer l'Administration";
+
+        try {
+            // Appel vers votre route GET pour récupérer le template HTML
+            const response = await fetch(`${API}/ajoutPericope`);
+            const data = await response.json();
+
+            if (data.success && data.html) {
+                // Injection dynamique du code HTML du formulaire
+                formContainer.innerHTML = data.html;
+                
+                // Activation des écouteurs sur le nouveau formulaire injecté
+                setupPericopeFormListener();
+            } else {
+                formContainer.innerHTML = `<p class="text-red-500 font-medium">Erreur lors de la génération du formulaire.</p>`;
+            }
+        } catch (error) {
+            console.error("Erreur d'appel formulaire :", error);
+            formContainer.innerHTML = `<p class="text-red-500 font-medium">Impossible de joindre le serveur.</p>`;
+        }
+    });
+}
+
+/**
+ * Configure la gestion de la soumission du formulaire de péricope injecté
+ */
+function setupPericopeFormListener() {
+    const form = document.getElementById("formPericope");
+    const pericopeLoader = document.getElementById("pericopeLoader");
+    const btnSubmitPericope = document.getElementById("btnSubmitPericope");
+
+    if (form) {
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const payload = {
+                dimanche_ou_fete: document.getElementById("dimanche_ou_fete").value.trim(),
+                ancien_testament: document.getElementById("ancien_testament").value.trim(),
+                epitre: document.getElementById("epitre").value.trim(),
+                evangile: document.getElementById("evangile").value.trim()
+            };
+
+            // Blocage graphique du formulaire pendant le traitement
+            if (pericopeLoader) pericopeLoader.classList.remove("hidden");
+            if (btnSubmitPericope) {
+                btnSubmitPericope.disabled = true;
+                btnSubmitPericope.classList.add("opacity-75", "cursor-not-allowed");
+            }
+
+            try {
+                // Envoi des données saisies vers votre route POST
+                const response = await fetch(`${API}/ajoutPericope`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert("🎉 Péricope liturgique enregistrée avec succès dans MongoDB !");
+                    form.reset();
+                } else {
+                    alert(`❌ Échec : ${data.message || "Erreur de traitement"}`);
+                }
+            } catch (error) {
+                console.error("Erreur insertion :", error);
+                alert("Impossible d'enregistrer la péricope. Vérifiez la connexion du serveur.");
+            } finally {
+                if (pericopeLoader) pericopeLoader.classList.add("hidden");
+                if (btnSubmitPericope) {
+                    btnSubmitPericope.disabled = false;
+                    btnSubmitPericope.classList.remove("opacity-75", "cursor-not-allowed");
+                }
+            }
+        });
+    }
+}
+
+// ============================================
+// 🚀 ÉCOUTEUR D'ÉVÉNEMENT SUR L'ACTION UNIQUE
+// ============================================
+
 if (btnSubmitAction && actionSelect) {
     btnSubmitAction.addEventListener('click', async () => {
         const textValue = bibleTextInput.value.trim();
