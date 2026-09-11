@@ -1,6 +1,6 @@
-import {displayAnalyse} from "./fonctions.js"
+import {displayAnalyse} from "./models/fonctions.js"
 // import {displayPredication} from "./fonctions.js"
-import { getAjoutPericopeTemplate } from "./ajoutApp.js";
+import { getAjoutPericopeTemplate } from "./models/ajoutApp.js";
 
 // Sélection des éléments de l'interface globale
 const bibleTextInput = document.getElementById('bibleText');
