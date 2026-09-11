@@ -31,6 +31,8 @@ const API = '/api';
 // ==========================================
 // ⚙️ GESTION DU BOUTON ET DU FORMULAIRE D'AJOUT
 // ==========================================
+const mainFormSection = document.getElementById('mainFormSection'); // Récupération du formulaire principal
+
 if (btnToggleAdmin && adminBlock && formContainer) {
     btnToggleAdmin.addEventListener('click', async () => {
 
@@ -44,6 +46,7 @@ if (btnToggleAdmin && adminBlock && formContainer) {
 
         formContainer.innerHTML = `<p class="text-center text-slate-400 italic py-4">Chargement du formulaire...</p>`;
         adminBlock.classList.remove('hidden');
+        mainFormSection.classList.add('hidden'); // Cache complètement le formulaire principal
         btnToggleAdmin.textContent = "❌ Fermer l'Administration";
 
         const template = getAjoutPericopeTemplate()
@@ -51,24 +54,8 @@ if (btnToggleAdmin && adminBlock && formContainer) {
 
         formContainer.innerHTML = template;
 
-        // try {
-        //     // Appel vers votre route GET pour récupérer le template HTML
-        //     const response = await fetch(`${API}/ajoutPericope`);
-        //     const data = await response.json();
-
-        //     if (data.success && data.html) {
-        //         // Injection dynamique du code HTML du formulaire
-        //         formContainer.innerHTML = data.html;
-                
-        //         // Activation des écouteurs sur le nouveau formulaire injecté
-        //         setupPericopeFormListener();
-        //     } else {
-        //         formContainer.innerHTML = `<p class="text-red-500 font-medium">Erreur lors de la génération du formulaire.</p>`;
-        //     }
-        // } catch (error) {
-        //     console.error("Erreur d'appel formulaire :", error);
-        //     formContainer.innerHTML = `<p class="text-red-500 font-medium">Impossible de joindre le serveur.</p>`;
-        // }
+        // Activation de l'écouteur d'événement sur le formulaire d'ajout
+        setupPericopeFormListener()
     });
 }
 
