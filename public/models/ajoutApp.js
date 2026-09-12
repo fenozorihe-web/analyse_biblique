@@ -1,77 +1,10 @@
-document.addEventListener("DOMContentLoaded", async () => {
-    const formContainer = document.getElementById("formContainer");
-
-    try {
-        // 1. Récupération du HTML depuis le Backend
-        const response = await fetch('/api/ajoutPericope');
-        const data = await response.json();
-
-        if (data.success && data.html) {
-            // 2. Injection du gabarit HTML dans le DOM
-            formContainer.innerHTML = data.html;
-            
-            // 3. Activation de l'écouteur d'événement sur le formulaire fraîchement injecté
-            setupFormListener();
-        }
-    } catch (error) {
-        console.error("Erreur de chargement du template :", error);
-        formContainer.innerHTML = `<p class="text-center text-red-500 font-medium">Erreur lors de la récupération du formulaire.</p>`;
-    }
-});
-
-function setupFormListener() {
-    const form = document.getElementById("formPericope");
-    const loader = document.getElementById("pericopeLoader");
-    const btnSubmit = document.getElementById("btnSubmitPericope");
-
-    if (form) {
-        form.addEventListener("submit", async (e) => {
-            e.preventDefault(); // Évite le rechargement de page classique
-
-            // Récupération des valeurs saisies
-            const payload = {
-                dimanche_ou_fete: document.getElementById("dimanche_ou_fete").value.trim(),
-                ancien_testament: document.getElementById("ancien_testament").value.trim(),
-                epitre: document.getElementById("epitre").value.trim(),
-                evangile: document.getElementById("evangile").value.trim(),
-            };
-
-            // Verrouillage de l'interface pendant l'enregistrement
-            loader.classList.remove("hidden");
-            btnSubmit.disabled = true;
-            btnSubmit.classList.add("opacity-75", "cursor-not-allowed");
-
-            try {
-                const response = await fetch('/api/ajoutPericope', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    alert("🎉 Succès : La péricope liturgique a bien été enregistrée dans MongoDB !");
-                    form.reset(); // Vide les champs du formulaire
-                } else {
-                    alert(`❌ Échec : ${data.message}`);
-                }
-            } catch (error) {
-                console.error("Erreur lors de la soumission :", error);
-                alert("Impossible de contacter le serveur backend pour insérer les données.");
-            } finally {
-                // Déverrouillage de l'interface graphique
-                loader.classList.add("hidden");
-                btnSubmit.disabled = false;
-                btnSubmit.classList.remove("opacity-75", "cursor-not-allowed");
-            }
-        });
-    }
-}
-
+/**
+ * Génère le formulaire HTML d'ajout de péricope avec Sélecteur Calendrier Biblique
+ * @returns {string} Code HTML avec styles Tailwind
+ */
 export function getAjoutPericopeTemplate() {
     return `
-      <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 border border-slate-100">
+      <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 border border-slate-100 mt-4 relative">
           <div class="mb-6 border-b pb-4">
               <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
                   ➕ Enregistrer une Péricope Liturgique
@@ -86,44 +19,67 @@ export function getAjoutPericopeTemplate() {
               <div class="flex flex-col gap-1.5">
                   <label for="dimanche_ou_fete" class="text-sm font-semibold text-slate-700">Nom du Dimanche ou de la Fête</label>
                   <input type="text" id="dimanche_ou_fete" required
-                      class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
+                      class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition text-slate-800"
                       placeholder="Ex: 1er Dimanche de l'Avent, Noël...">
               </div>
   
               <!-- Ancien Testament -->
-              <div class="flex flex-col gap-1.5">
+              <div class="flex flex-col gap-1.5 relative">
                   <label for="ancien_testament" class="text-sm font-semibold text-slate-700">Lecture de l'Ancien Testament</label>
-                  <input type="text" id="ancien_testament" required
-                      class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
-                      placeholder="Ex: Ésaïe 2:1-5">
+                  <input type="text" id="ancien_testament" required readonly
+                      class="w-full border border-slate-300 rounded-xl p-3 bg-slate-50 hover:bg-slate-100/70 focus:ring-4 focus:ring-blue-100 outline-none transition cursor-pointer text-slate-800 font-medium pl-10"
+                      placeholder="Cliquez pour choisir un passage...">
+                  <span class="absolute left-3.5 top-[38px] text-slate-400 pointer-events-none">📖</span>
               </div>
   
               <!-- Épître -->
               <div class="flex flex-col gap-1.5">
-                  <label for="epitre" class="text-sm font-semibold text-slate-700">Lecture de l'Épître</label>
-                  <input type="text" id="epitre_1" required
-                      class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
-                      placeholder="Ex: Romains 13:11-14">
-                  <input type="text" id="epitre_2" required
-                      class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
-                      placeholder="Ex: Apokalypse 3:20-22">
-                  <input type="text" id="epitre_3"
-                      class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
-                      placeholder="Ex: Jeremie 31: 31-34">
+                  <label class="text-sm font-semibold text-slate-700">Lectures de l'Épître</label>
+                  <div class="space-y-2">
+                      <div class="relative">
+                          <input type="text" id="epitre_1" required readonly
+                              class="w-full border border-slate-300 rounded-xl p-3 bg-slate-50 hover:bg-slate-100/70 outline-none transition cursor-pointer text-slate-800 font-medium pl-10"
+                              placeholder="Épître 1 (Obligatoire) - Cliquez pour choisir...">
+                          <span class="absolute left-3.5 top-[14px] text-slate-400 pointer-events-none">✉️</span>
+                      </div>
+                      <div class="relative">
+                          <input type="text" id="epitre_2" readonly
+                              class="w-full border border-slate-300 rounded-xl p-3 bg-slate-50 hover:bg-slate-100/70 outline-none transition cursor-pointer text-slate-800 font-medium pl-10"
+                              placeholder="Épître 2 (Optionnelle) - Cliquez pour choisir...">
+                          <span class="absolute left-3.5 top-[14px] text-slate-400 pointer-events-none">✉️</span>
+                      </div>
+                      <div class="relative">
+                          <input type="text" id="epitre_3" readonly
+                              class="w-full border border-slate-300 rounded-xl p-3 bg-slate-50 hover:bg-slate-100/70 outline-none transition cursor-pointer text-slate-800 font-medium pl-10"
+                              placeholder="Épître 3 (Optionnelle) - Cliquez pour choisir...">
+                          <span class="absolute left-3.5 top-[14px] text-slate-400 pointer-events-none">✉️</span>
+                      </div>
+                  </div>
               </div>
   
               <!-- Évangile -->
               <div class="flex flex-col gap-1.5">
-                  <label for="evangile" class="text-sm font-semibold text-slate-700">Lecture de l'Évangile</label>
-                  <input type="text" id="evangile_1" required
-                      class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
-                      placeholder="Ex: Matthieu 21:1-9">
-                  <input type="text" id="evangile_2" required
-                      class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
-                      placeholder="Ex: Jean 18:33-37">
-                  <input type="text" id="evangile_3"
-                      class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
-                      placeholder="Ex: Luc 4:16-22">
+                  <label class="text-sm font-semibold text-slate-700">Lectures de l'Évangile</label>
+                  <div class="space-y-2">
+                      <div class="relative">
+                          <input type="text" id="evangile_1" required readonly
+                              class="w-full border border-slate-300 rounded-xl p-3 bg-slate-50 hover:bg-slate-100/70 outline-none transition cursor-pointer text-slate-800 font-medium pl-10"
+                              placeholder="Évangile 1 (Obligatoire) - Cliquez pour choisir...">
+                          <span class="absolute left-3.5 top-[14px] text-slate-400 pointer-events-none">⛪</span>
+                      </div>
+                      <div class="relative">
+                          <input type="text" id="evangile_2" readonly
+                              class="w-full border border-slate-300 rounded-xl p-3 bg-slate-50 hover:bg-slate-100/70 outline-none transition cursor-pointer text-slate-800 font-medium pl-10"
+                              placeholder="Évangile 2 (Optionnelle) - Cliquez pour choisir...">
+                          <span class="absolute left-3.5 top-[14px] text-slate-400 pointer-events-none">⛪</span>
+                      </div>
+                      <div class="relative">
+                          <input type="text" id="evangile_3" readonly
+                              class="w-full border border-slate-300 rounded-xl p-3 bg-slate-50 hover:bg-slate-100/70 outline-none transition cursor-pointer text-slate-800 font-medium pl-10"
+                              placeholder="Évangile 3 (Optionnelle) - Cliquez pour choisir...">
+                          <span class="absolute left-3.5 top-[14px] text-slate-400 pointer-events-none">⛪</span>
+                      </div>
+                  </div>
               </div>
   
               <!-- Bouton de soumission -->
@@ -135,6 +91,49 @@ export function getAjoutPericopeTemplate() {
                   </button>
               </div>
           </form>
+
+          <!-- ======================================================== -->
+          <!-- 🎴 FENÊTRE MODALE STYLE CALENDRIER INTERACTIF -->
+          <!-- ======================================================== -->
+          <div id="bibleModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+              <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full flex flex-col max-h-[85vh] border border-slate-100">
+                  
+                  <!-- Entête pop-up avec fil d'ariane -->
+                  <div class="p-5 border-b bg-slate-50 rounded-t-2xl">
+                      <div class="flex justify-between items-center mb-2">
+                          <h3 class="font-bold text-slate-900 text-lg flex items-center gap-1.5">📅 Sélecteur de Passage</h3>
+                          <button type="button" id="closeModal" class="text-slate-400 hover:text-slate-600 bg-white hover:bg-slate-200 border w-8 h-8 rounded-xl transition font-bold text-sm flex items-center justify-center">✕</button>
+                      </div>
+                      <!-- Fil d'ariane indicatif -->
+                      <div class="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                          <span id-step="1" class="text-blue-600">1. Livre</span> ➔ 
+                          <span id-step="2">2. Chapitre</span> ➔ 
+                          <span id-step="3">3. Versets</span>
+                      </div>
+                  </div>
+
+                  <!-- Écran de Rappel/Aperçu dynamique -->
+                  <div class="bg-indigo-50 border-b border-indigo-100 px-6 py-2.5 flex justify-between items-center text-xs">
+                      <span class="font-medium text-indigo-900">Sélection :</span>
+                      <span id="modalPreview" class="font-bold text-indigo-950 bg-white px-3 py-1 rounded-lg border border-indigo-200 shadow-sm text-sm italic">Aucun livre choisi</span>
+                  </div>
+
+                  <!-- Zone de navigation "Grille Calendrier" défilante -->
+                  <div id="modalGridContainer" class="p-6 overflow-y-auto grid grid-cols-4 gap-2.5 max-h-[50vh]">
+                      <!-- Injecté dynamiquement par JavaScript -->
+                  </div>
+
+                  <!-- Pied de page avec bouton de retour ou validation -->
+                  <div class="p-4 border-t bg-slate-50 rounded-b-2xl flex justify-between items-center">
+                      <button type="button" id="btnModalBack" class="hidden px-4 py-2 border border-slate-300 text-slate-700 bg-white hover:bg-slate-100 rounded-xl font-semibold text-xs transition">
+                          ⬅ Retour
+                      </button>
+                      <button type="button" id="btnValidatePassage" disabled class="ml-auto px-5 py-2.5 bg-blue-600 opacity-50 cursor-not-allowed text-white rounded-xl font-bold text-xs transition shadow-sm">
+                          Valider le passage
+                      </button>
+                  </div>
+              </div>
+          </div>
       </div>
     `;
-  }
+}

@@ -1,6 +1,8 @@
 import {displayAnalyse} from "./models/fonctions.js"
 // import {displayPredication} from "./fonctions.js"
 import { getAjoutPericopeTemplate } from "./models/ajoutApp.js";
+// ✅ NOUVEL IMPORT ÉPURÉ
+import { initBibleCalendar } from "./models/bibleSelector.js"; 
 
 // Sélection des éléments de l'interface globale
 const bibleTextInput = document.getElementById('bibleText');
@@ -60,17 +62,29 @@ if (btnToggleAdmin && adminBlock && formContainer) {
 }
 
 /**
- * Configure la gestion de la soumission du formulaire de péricope injecté
+ * Configure la gestion de la soumission du formulaire de péricope
  */
 function setupPericopeFormListener() {
     const form = document.getElementById("formPericope");
     const pericopeLoader = document.getElementById("pericopeLoader");
     const btnSubmitPericope = document.getElementById("btnSubmitPericope");
 
+    // ✅ APPORT MAJEUR : Branchement du calendrier en une seule ligne grâce au module externe !
+    const champsLectures = ["ancien_testament", "epitre_1", "epitre_2", "epitre_3", "evangile_1", "evangile_2", "evangile_3"];
+    champsLectures.forEach(id => {
+        const inputField = document.getElementById(id);
+        if (inputField) {
+            inputField.addEventListener("click", () => {
+                // Appelle la fonction importée du fichier bibleSelector.js
+                initBibleCalendar(inputField); 
+            });
+        }
+    });
+
+    // Écouteur de soumission du formulaire vers MongoDB
     if (form) {
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
-
             const payload = {
                 dimanche_ou_fete: document.getElementById("dimanche_ou_fete").value.trim(),
                 ancien_testament: document.getElementById("ancien_testament").value.trim(),
@@ -82,7 +96,6 @@ function setupPericopeFormListener() {
                 evangile_3: document.getElementById("evangile_3").value.trim()
             };
 
-            // Blocage graphique du formulaire pendant le traitement
             if (pericopeLoader) pericopeLoader.classList.remove("hidden");
             if (btnSubmitPericope) {
                 btnSubmitPericope.disabled = true;
@@ -90,24 +103,21 @@ function setupPericopeFormListener() {
             }
 
             try {
-                // Envoi des données saisies vers votre route POST
                 const response = await fetch(`${API}/ajoutPericope`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-
                 const data = await response.json();
-
                 if (data.success) {
                     alert("🎉 Péricope liturgique enregistrée avec succès dans MongoDB !");
                     form.reset();
                 } else {
-                    alert(`❌ Échec : ${data.message || "Erreur de traitement"}`);
+                    alert(`❌ Échec : ${data.message || "Erreur"}`);
                 }
             } catch (error) {
-                console.error("Erreur insertion :", error);
-                alert("Impossible d'enregistrer la péricope. Vérifiez la connexion du serveur.");
+                console.error(error);
+                alert("Impossible d'enregistrer la péricope.");
             } finally {
                 if (pericopeLoader) pericopeLoader.classList.add("hidden");
                 if (btnSubmitPericope) {
