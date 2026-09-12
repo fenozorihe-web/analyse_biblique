@@ -35,29 +35,35 @@ const API = '/api';
 // ==========================================
 const mainFormSection = document.getElementById('mainFormSection'); // Récupération du formulaire principal
 
-if (btnToggleAdmin && adminBlock && formContainer) {
+if (btnToggleAdmin && adminBlock && formContainer && mainFormSection) {
     btnToggleAdmin.addEventListener('click', async () => {
 
         console.log("L'addEventListener est maintenant entendu.");
-        // Si l'interface d'administration est déjà ouverte, on la ferme au clic
+        
+        // 🔄 CAS 1 : L'administration est ouverte, l'utilisateur CLIQUE SUR FERMER
         if (!adminBlock.classList.contains('hidden')) {
-            adminBlock.classList.add('hidden');
+            adminBlock.classList.add('hidden'); // Ferme l'administration
+            
+            // ✅ CORRECTION FIXE : Fait réapparaître instantanément le formulaire principal
+            mainFormSection.classList.remove('hidden'); 
+            
             btnToggleAdmin.textContent = "⚙️ Gérer les Péricopes";
             return;
         }
 
+        // 🔄 CAS 2 : L'administration est fermée, l'utilisateur CLIQUE SUR OUVRIR
         formContainer.innerHTML = `<p class="text-center text-slate-400 italic py-4">Chargement du formulaire...</p>`;
         adminBlock.classList.remove('hidden');
         mainFormSection.classList.add('hidden'); // Cache complètement le formulaire principal
         btnToggleAdmin.textContent = "❌ Fermer l'Administration";
 
-        const template = getAjoutPericopeTemplate()
+        const template = getAjoutPericopeTemplate();
         console.log(template);
 
         formContainer.innerHTML = template;
 
         // Activation de l'écouteur d'événement sur le formulaire d'ajout
-        setupPericopeFormListener()
+        setupPericopeFormListener();
     });
 }
 
