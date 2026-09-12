@@ -1,12 +1,79 @@
-// Base de données structurelle des principaux livres d'étude liturgique (Nom: Nombre de chapitres)
+// Base de données structurelle complète du Canon Protestant (66 Livres)
+// Format : "Nom du Livre": [Versets du Chapitre 1, Versets du Chapitre 2, ...]
 const BIBLE_STRUCTURE = {
-    "Genèse": 50, "Exode": 40, "Lévitique": 27, "Nombres": 36, "Deutéronome": 34,
-    "Ésaïe": 66, "Jérémie": 52, "Ézéchiel": 48, "Psaumes": 150, "Proverbes": 31,
-    "Matthieu": 28, "Marc": 16, "Luc": 24, "Jean": 21,
-    "Actes": 28, "Romains": 16, "1 Corinthiens": 16, "2 Corinthiens": 13,
-    "Galates": 6, "Éphésiens": 6, "Philippiens": 4, "Colossiens": 4,
-    "1 Thessaloniciens": 5, "2 Thessaloniciens": 3, "1 Timothée": 6, "2 Timothée": 4,
-    "Hébreux": 13, "Jacques": 5, "1 Pierre": 5, "2 Pierre": 3, "Apocalypse": 22
+    // ==========================================
+    // 📜 ANCIEN TESTAMENT (39 Livres)
+    // ==========================================
+    "Genèse":,
+    "Exode":,
+    "Lévitique":,
+    "Nombres":,
+    "Deutéronome":,
+    "Josué":,
+    "Juges":,
+    "Ruth":,
+    "1 Samuel":,
+    "2 Samuel":,
+    "1 Rois":,
+    "2 Rois":,
+    "1 Chroniques":,
+    "2 Chroniques":,
+    "Esdras":,
+    "Néhémie":,
+    "Esther":,
+    "Job":,
+    "Psaumes":,
+    "Proverbes":,
+    "Ecclésiaste":,
+    "Cantique des Cantiques":,
+    "Ésaïe":,
+    "Jérémie":,
+    "Lamentations":,
+    "Ézéchiel":,
+    "Daniel":,
+    "Osée":,
+    "Joël":,
+    "Amos":,
+    "Abdias":,
+    "Jonas":,
+    "Michée":,
+    "Nahum":,
+    "Habacuc":,
+    "Sophonie":,
+    "Aggée":,
+    "Zacharie":,
+    "Malachie":,
+
+    // ==========================================
+    // ⛪ NOUVEAU TESTAMENT (27 Livres)
+    // ==========================================
+    "Matthieu":,
+    "Marc":,
+    "Luc":,
+    "Jean":,
+    "Actes":,
+    "Romains":,
+    "1 Corinthiens":,
+    "2 Corinthiens":,
+    "Galates":,
+    "Éphésiens":,
+    "Philippiens":,
+    "Colossiens":,
+    "1 Thessaloniciens":,
+    "2 Thessaloniciens":,
+    "1 Timothée":,
+    "2 Timothée":,
+    "Tite":,
+    "Philémon":,
+    "Hébreux":,
+    "Jacques":,
+    "1 Pierre":,
+    "2 Pierre":,
+    "1 Jean":,
+    "2 Jean":,
+    "3 Jean":,
+    "Jude":,
+    "Apocalypse": [20, 29, 22, 11, 14, 17, 17, 13, 21, 11, 19, 17, 18, 20, 8, 21, 18, 24, 21, 15, 27, 21]
 };
 
 // États internes de la sélection de manière isolée
@@ -15,8 +82,7 @@ let selectedLivre = "";
 let selectedChapitre = "";
 let selectedVersetDebut = null;
 let selectedVersetFin = null;
-let isListenersConfigured = false; 
-
+let isListenersConfigured = false;
 // ✅ FIX CRUCIAL : Variable globale au module pour suivre l'input actif en temps réel
 let inputCibleActuel = null; 
 
@@ -32,10 +98,9 @@ export function initBibleCalendar(inputCible) {
     const btnValidatePassage = document.getElementById("btnValidatePassage");
     const closeModal = document.getElementById("closeModal");
 
-    // ✅ Mettre à jour l'input cible à chaque nouvel appel/clic
     inputCibleActuel = inputCible; 
 
-    // Réinitialisation des états à chaque ouverture de la fenêtre modale
+    // Réinitialisation lors de l'ouverture
     currentStep = 1;
     selectedLivre = "";
     selectedChapitre = "";
@@ -44,7 +109,6 @@ export function initBibleCalendar(inputCible) {
 
     if (bibleModal) bibleModal.classList.remove("hidden");
 
-    // Fonction pour rafraîchir l'affichage des étapes (fil d'ariane)
     const updateStepsUI = () => {
         document.querySelectorAll("[id-step]").forEach(el => {
             const stepNum = parseInt(el.getAttribute("id-step"));
@@ -58,15 +122,10 @@ export function initBibleCalendar(inputCible) {
         });
         
         if (btnModalBack) {
-            if (currentStep > 1) {
-                btnModalBack.classList.remove("hidden");
-            } else {
-                btnModalBack.classList.add("hidden");
-            }
+            currentStep > 1 ? btnModalBack.classList.remove("hidden") : btnModalBack.classList.add("hidden");
         }
     };
 
-    // Fonction pour mettre à jour l'aperçu textuel de la référence
     const renderPreviewText = () => {
         if (!selectedLivre) {
             modalPreview.textContent = "Aucun livre choisi";
@@ -89,7 +148,6 @@ export function initBibleCalendar(inputCible) {
         }
     };
 
-    // Moteur de rendu graphique de la grille (Calendrier)
     const drawGrid = () => {
         if (!modalGridContainer) return;
         modalGridContainer.innerHTML = "";
@@ -112,10 +170,11 @@ export function initBibleCalendar(inputCible) {
                 modalGridContainer.appendChild(btn);
             });
         }
-        // ÉTAPE 2 : Choix du Chapitre
+        // ÉTAPE 2 : Choix du Chapitre (Dynamique)
         else if (currentStep === 2) {
             modalGridContainer.className = "p-6 overflow-y-auto grid grid-cols-5 gap-2 max-h-[50vh]";
-            const totalChapitres = BIBLE_STRUCTURE[selectedLivre];
+            // ✅ CORRECTION : Le nombre exact de chapitres correspond à la longueur du tableau du livre
+            const totalChapitres = BIBLE_STRUCTURE[selectedLivre].length;
 
             for (let i = 1; i <= totalChapitres; i++) {
                 const btn = document.createElement("button");
@@ -130,10 +189,11 @@ export function initBibleCalendar(inputCible) {
                 modalGridContainer.appendChild(btn);
             }
         }
-        // ÉTAPE 3 : Choix des Versets
+        // ÉTAPE 3 : Choix des Versets (Précision Absolue)
         else if (currentStep === 3) {
             modalGridContainer.className = "p-6 overflow-y-auto grid grid-cols-6 gap-1.5 max-h-[50vh]";
-            const totalVersets = 50; 
+            // ✅ CORRECTION : Récupération du nombre exact de versets pour ce chapitre précis (Index i - 1)
+            const totalVersets = BIBLE_STRUCTURE[selectedLivre][selectedChapitre - 1]; 
 
             for (let i = 1; i <= totalVersets; i++) {
                 const btn = document.createElement("button");
@@ -169,7 +229,6 @@ export function initBibleCalendar(inputCible) {
         }
     };
 
-    // Configuration unique et définitive des boutons structurels
     if (!isListenersConfigured) {
         if (btnModalBack) {
             btnModalBack.addEventListener("click", () => {
@@ -187,7 +246,6 @@ export function initBibleCalendar(inputCible) {
 
         if (btnValidatePassage) {
             btnValidatePassage.addEventListener("click", () => {
-                // ✅ MODIFICATION : Utilise la variable globale 'inputCibleActuel' mise à jour au clic
                 if (inputCibleActuel && modalPreview.textContent && selectedLivre && selectedChapitre) {
                     inputCibleActuel.value = modalPreview.textContent;
                     inputCibleActuel.dispatchEvent(new Event('change'));
@@ -203,10 +261,8 @@ export function initBibleCalendar(inputCible) {
                 if (modal) modal.classList.add("hidden");
             });
         }
-
         isListenersConfigured = true; 
     }
 
-    // Premier lancement de la grille au clic
     drawGrid();
 }
