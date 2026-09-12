@@ -15,6 +15,7 @@ let selectedLivre = "";
 let selectedChapitre = "";
 let selectedVersetDebut = null;
 let selectedVersetFin = null;
+let isListenersConfigured = false; // Drapeau de sécurité pour éviter les doublons d'écouteurs
 
 /**
  * Initialise et pilote le comportement du sélecteur calendrier biblique
@@ -37,7 +38,7 @@ export function initBibleCalendar(inputCible) {
 
     if (bibleModal) bibleModal.classList.remove("hidden");
 
-    // Fonction interne pour rafraîchir l'affichage des étapes (fil d'ariane)
+    // Fonction pour rafraîchir l'affichage des étapes (fil d'ariane)
     const updateStepsUI = () => {
         document.querySelectorAll("[id-step]").forEach(el => {
             const stepNum = parseInt(el.getAttribute("id-step"));
@@ -49,12 +50,18 @@ export function initBibleCalendar(inputCible) {
                 el.className = "text-slate-400 font-normal";
             }
         });
+        
+        // ✅ FIX 2 : Affichage et masquage explicite et robuste du bouton Retour
         if (btnModalBack) {
-            currentStep > 1 ? btnModalBack.classList.remove("hidden") : btnModalBack.classList.add("hidden");
+            if (currentStep > 1) {
+                btnModalBack.classList.remove("hidden");
+            } else {
+                btnModalBack.classList.add("hidden");
+            }
         }
     };
 
-    // Fonction interne pour mettre à jour l'aperçu textuel de la référence
+    // Fonction pour mettre à jour l'aperçu textuel de la référence
     const renderPreviewText = () => {
         if (!selectedLivre) {
             modalPreview.textContent = "Aucun livre choisi";
@@ -73,7 +80,7 @@ export function initBibleCalendar(inputCible) {
 
         if (selectedLivre && selectedChapitre && btnValidatePassage) {
             btnValidatePassage.disabled = false;
-            btnValidatePassage.className = "ml-auto px-5 py-2.5 bg-blue-700 text-white rounded-xl font-bold text-xs transition shadow-md hover:bg-blue-800";
+            btnValidatePassage.className = "ml-auto px-5 py-2.5 bg-blue-700 text-white rounded-xl font-bold text-xs transition shadow-md hover:bg-blue-800 cursor-pointer";
         }
     };
 
@@ -90,7 +97,7 @@ export function initBibleCalendar(inputCible) {
             Object.keys(BIBLE_STRUCTURE).forEach(livre => {
                 const btn = document.createElement("button");
                 btn.type = "button";
-                btn.className = "p-2.5 text-xs font-semibold text-slate-800 bg-slate-50 hover:bg-blue-50 hover:text-blue-700 rounded-xl border border-slate-200 transition text-left pl-3 flex items-center justify-between";
+                btn.className = "p-2.5 text-xs font-semibold text-slate-800 bg-slate-50 hover:bg-blue-50 hover:text-blue-700 rounded-xl border border-slate-200 transition text-left pl-3 flex items-center justify-between cursor-pointer";
                 btn.innerHTML = `<span>${livre}</span> <span class="text-[10px] text-slate-400">➔</span>`;
                 btn.addEventListener("click", () => {
                     selectedLivre = livre;
@@ -108,7 +115,7 @@ export function initBibleCalendar(inputCible) {
             for (let i = 1; i <= totalChapitres; i++) {
                 const btn = document.createElement("button");
                 btn.type = "button";
-                btn.className = "p-3 text-sm font-bold text-slate-700 bg-slate-100/70 hover:bg-blue-600 hover:text-white rounded-xl transition border text-center shadow-sm";
+                btn.className = "p-3 text-sm font-bold text-slate-700 bg-slate-100/70 hover:bg-blue-600 hover:text-white rounded-xl transition border text-center shadow-sm cursor-pointer";
                 btn.textContent = i;
                 btn.addEventListener("click", () => {
                     selectedChapitre = i;
@@ -118,10 +125,9 @@ export function initBibleCalendar(inputCible) {
                 modalGridContainer.appendChild(btn);
             }
         }
-        // ÉTAPE 3 : Choix des Versets (Intervalle de calendrier)
+        // ÉTAPE 3 : Choix des Versets (Grille Calendrier)
         else if (currentStep === 3) {
             modalGridContainer.className = "p-6 overflow-y-auto grid grid-cols-6 gap-1.5 max-h-[50vh]";
-            // Nombre fictif fixe de 50 versets max par chapitre pour l'affichage graphique fluide
             const totalVersets = 50; 
 
             for (let i = 1; i <= totalVersets; i++) {
@@ -129,13 +135,13 @@ export function initBibleCalendar(inputCible) {
                 btn.type = "button";
                 
                 if (selectedVersetDebut === i) {
-                    btn.className = "p-2 text-xs font-extrabold bg-blue-600 text-white rounded-lg border border-blue-700";
+                    btn.className = "p-2 text-xs font-extrabold bg-blue-600 text-white rounded-lg border border-blue-700 cursor-pointer";
                 } else if (selectedVersetFin === i) {
-                    btn.className = "p-2 text-xs font-extrabold bg-indigo-600 text-white rounded-lg border border-indigo-700";
+                    btn.className = "p-2 text-xs font-extrabold bg-indigo-600 text-white rounded-lg border border-indigo-700 cursor-pointer";
                 } else if (selectedVersetDebut && selectedVersetFin && i > selectedVersetDebut && i < selectedVersetFin) {
-                    btn.className = "p-2 text-xs font-semibold bg-blue-50 text-blue-700 rounded-lg border border-blue-100";
+                    btn.className = "p-2 text-xs font-semibold bg-blue-50 text-blue-700 rounded-lg border border-blue-100 cursor-pointer";
                 } else {
-                    btn.className = "p-2 text-xs font-medium bg-slate-50 text-slate-600 hover:bg-slate-200 rounded-lg border transition";
+                    btn.className = "p-2 text-xs font-medium bg-slate-50 text-slate-600 hover:bg-slate-200 rounded-lg border transition cursor-pointer";
                 }
                 
                 btn.textContent = i;
@@ -158,39 +164,43 @@ export function initBibleCalendar(inputCible) {
         }
     };
 
-    // Configuration des écouteurs des boutons d'action du pop-up
-    if (btnModalBack) {
-        // Enlève l'ancien écouteur pour éviter les doublons d'exécution en mémoire
-        const newBackBtn = btnModalBack.cloneNode(true);
-        btnModalBack.parentNode.replaceChild(newBackBtn, btnModalBack);
-        newBackBtn.addEventListener("click", () => {
-            if (currentStep === 3) {
-                selectedVersetDebut = null;
-                selectedVersetFin = null;
-                currentStep = 2;
-            } else if (currentStep === 2) {
-                selectedLivre = "";
-                currentStep = 1;
-            }
-            drawGrid();
-        });
-    }
+    // ✅ FIX 1 : Configuration unique et définitive des boutons structurels sans clonage brise-DOM
+    if (!isListenersConfigured) {
+        if (btnModalBack) {
+            btnModalBack.addEventListener("click", () => {
+                if (currentStep === 3) {
+                    selectedVersetDebut = null;
+                    selectedVersetFin = null;
+                    currentStep = 2;
+                } else if (currentStep === 2) {
+                    selectedLivre = "";
+                    currentStep = 1;
+                }
+                drawGrid();
+            });
+        }
 
-    if (btnValidatePassage) {
-        const newValidateBtn = btnValidatePassage.cloneNode(true);
-        btnValidatePassage.parentNode.replaceChild(newValidateBtn, btnValidatePassage);
-        newValidateBtn.addEventListener("click", () => {
-            if (inputCible && modalPreview.textContent) {
-                inputCible.value = modalPreview.textContent;
-            }
-            if (bibleModal) bibleModal.classList.add("hidden");
-        });
-    }
+        if (btnValidatePassage) {
+            btnValidatePassage.addEventListener("click", () => {
+                // Utilise dynamiquement l'input actif retenu au moment du clic
+                if (inputCible && modalPreview.textContent && selectedLivre && selectedChapitre) {
+                    inputCible.value = modalPreview.textContent;
+                    // Déclenche manuellement l'événement change pour que le reste du script s'active
+                    inputCible.dispatchEvent(new Event('change'));
+                }
+                const modal = document.getElementById("bibleModal");
+                if (modal) modal.classList.add("hidden");
+            });
+        }
 
-    if (closeModal) {
-        closeModal.addEventListener("click", () => {
-            if (bibleModal) bibleModal.classList.add("hidden");
-        });
+        if (closeModal) {
+            closeModal.addEventListener("click", () => {
+                const modal = document.getElementById("bibleModal");
+                if (modal) modal.classList.add("hidden");
+            });
+        }
+
+        isListenersConfigured = true; // Verrouille pour ne plus jamais dupliquer les écouteurs globaux
     }
 
     // Premier lancement de la grille au clic
