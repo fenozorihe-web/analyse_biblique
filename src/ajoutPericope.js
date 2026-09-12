@@ -1,95 +1,72 @@
 import Pericope from "./models/Pericope.js";
 
 /**
- * Génère le formulaire HTML d'ajout de péricope
- * @returns {string} Code HTML avec styles Tailwind
- */
-export function getAjoutPericopeTemplate() {
-  return `
-    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 border border-slate-100">
-        <div class="mb-6 border-b pb-4">
-            <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                ➕ Enregistrer une Péricope Liturgique
-            </h2>
-            <p class="text-sm text-slate-500 mt-1">
-                Ajoutez un jour de fête et ses lectures associées dans la base MongoDB.
-            </p>
-        </div>
-
-        <form id="formPericope" class="space-y-5">
-            <!-- Dimanche ou Fête -->
-            <div class="flex flex-col gap-1.5">
-                <label for="dimanche_ou_fete" class="text-sm font-semibold text-slate-700">Nom du Dimanche ou de la Fête</label>
-                <input type="text" id="dimanche_ou_fete" required
-                    class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
-                    placeholder="Ex: 1er Dimanche de l'Avent, Noël...">
-            </div>
-
-            <!-- Ancien Testament -->
-            <div class="flex flex-col gap-1.5">
-                <label for="ancien_testament" class="text-sm font-semibold text-slate-700">Lecture de l'Ancien Testament</label>
-                <input type="text" id="ancien_testament" required
-                    class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
-                    placeholder="Ex: Ésaïe 2:1-5">
-            </div>
-
-            <!-- Épître -->
-            <div class="flex flex-col gap-1.5">
-                <label for="epitre" class="text-sm font-semibold text-slate-700">Lecture de l'Épître</label>
-                <input type="text" id="epitre" required
-                    class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
-                    placeholder="Ex: Romains 13:11-14">
-            </div>
-
-            <!-- Évangile -->
-            <div class="flex flex-col gap-1.5">
-                <label for="evangile" class="text-sm font-semibold text-slate-700">Lecture de l'Évangile</label>
-                <input type="text" id="evangile" required
-                    class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
-                    placeholder="Ex: Matthieu 24:36-44">
-            </div>
-
-            <!-- Bouton de soumission -->
-            <div class="pt-2">
-                <button type="submit" id="btnSubmitPericope"
-                    class="w-full px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition shadow shadow-emerald-100">
-                    <span>Enregistrer dans MongoDB</span>
-                    <div id="pericopeLoader" class="hidden animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                </button>
-            </div>
-        </form>
-    </div>
-  `;
-}
-
-/**
- * Insère une péricope liturgique dans MongoDB Atlas
- * @param {Object} data - Objet contenant les lectures
+ * Insère une péricope liturgique dans MongoDB Atlas de façon sécurisée
+ * @param {Object} data - Données transmises par le payload frontend
  */
 export async function insertPericope(data) {
   try {
-    const { dimanche_ou_fete, ancien_testament, epitre, evangile } = data;
+    const { 
+      dimanche_ou_fete, 
+      ancien_testament, 
+      epitre_1, epitre_2, epitre_3, 
+      evangile_1, evangile_2, evangile_3 
+    } = data;
 
-    // Découpage automatique des références pour en faire des mots-clés de recherche
-    const mots_cles = [
-      dimanche_ou_fete.toLowerCase(),
-      ancien_testament.split(" ")[0].toLowerCase(),
-      epitre.split(" ")[0].toLowerCase(),
-      evangile.split(" ")[0].toLowerCase()
+    // 1. Initialisation sûre du tableau de mots-clés
+    const mots_cles = [];
+
+    if (dimanche_ou_fete) {
+      mots_cles.push(dimanche_ou_fete.toLowerCase().trim());
+    }
+
+    // 2. Fonction utilitaire corrigée pour extraire le premier mot (Livre) en minuscule
+    const extraireLivre = (texteLecture) => {
+      if (texteLecture && typeof texteLecture === "string" && texteLecture.trim() !== "") {
+        const segments = texteLecture.trim().split(" ");
+        if (segments && segments[0]) {
+          return segments[0].toLowerCase(); // ✅ FIX DÉFINITIF : Extraction de l'index [0] textuel avant transformation
+        }
+      }
+      return null;
+    };
+
+    // 3. Extraction sécurisée pour chaque lecture facultative ou obligatoire
+    const livresExtraits = [
+      extraireLivre(ancien_testament),
+      extraireLivre(epitre_1),
+      extraireLivre(epitre_2),
+      extraireLivre(epitre_3),
+      extraireLivre(evangile_1),
+      extraireLivre(evangile_2),
+      extraireLivre(evangile_3)
     ];
 
+    // Ajout unique au tableau de mots-clés s'ils sont valides
+    livresExtraits.forEach(livre => {
+      if (livre && !mots_cles.includes(livre)) {
+        mots_cles.push(livre);
+      }
+    });
+
+    // 4. Instanciation Mongoose
     const nouvellePericope = new Pericope({
       dimanche_ou_fete,
       ancien_testament,
-      epitre,
-      evangile,
+      epitre_1: epitre_1 || "",
+      epitre_2: epitre_2 || "",
+      epitre_3: epitre_3 || "",
+      evangile_1: evangile_1 || "",
+      evangile_2: evangile_2 || "",
+      evangile_3: evangile_3 || "",
       mots_cles
     });
 
     await nouvellePericope.save();
     return { success: true, message: "Péricope enregistrée avec succès !" };
+
   } catch (error) {
-    console.error("Erreur lors de l'insertion Mongoose :", error);
+    console.error("Erreur lors de l'insertion Mongoose dans ajoutPericope.js :", error);
     throw error;
   }
 }

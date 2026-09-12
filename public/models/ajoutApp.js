@@ -107,7 +107,7 @@ export function getAjoutPericopeTemplate() {
                   <input type="text" id="epitre_2" required
                       class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
                       placeholder="Ex: Apokalypse 3:20-22">
-                  <input type="text" id="epitre_3" required
+                  <input type="text" id="epitre_3"
                       class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
                       placeholder="Ex: Jeremie 31: 31-34">
               </div>
@@ -121,7 +121,7 @@ export function getAjoutPericopeTemplate() {
                   <input type="text" id="evangile_2" required
                       class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
                       placeholder="Ex: Jean 18:33-37">
-                  <input type="text" id="evangile_3" required
+                  <input type="text" id="evangile_3"
                       class="w-full border border-slate-300 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
                       placeholder="Ex: Luc 4:16-22">
               </div>
