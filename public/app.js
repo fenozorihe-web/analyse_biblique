@@ -1,7 +1,7 @@
 import {displayAnalyse} from "./models/fonctions.js"
 // import {displayPredication} from "./fonctions.js"
 import { getAjoutPericopeTemplate } from "./models/ajoutApp.js";
-import { getAjoutProverbTemplate } from "./modules/templateProverb.js";
+import { getAjoutProverbTemplate } from "./models/ajoutProv.js";
 
 // ✅ NOUVEL IMPORT ÉPURÉ
 import { initBibleCalendar } from "./models/bibleSelector.js"; 
