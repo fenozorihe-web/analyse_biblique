@@ -39,27 +39,31 @@ export async function findPericopeByText(userText) {
 
     let searchTerm = userText.trim();
 
-    // 💡 SÉCURITÉ ANTI-TIMEOUT : Si le texte est très long (ex: un verset copié), 
-    // on extrait uniquement le premier mot (le Livre) pour éviter le plantage du RegExp
+    // Isolation du premier mot (Ex: "Matthieu") en cas de verset très long copié-collé
     if (searchTerm.length > 30) {
       const words = searchTerm.split(/[\s,.:]+/);
-      searchTerm = words[0]; // Prend par exemple "Matthieu" ou "Romains"
+      searchTerm = words[0];
     }
 
-    console.log(`🔎 Requête MongoDB optimisée sur le mot-clé : "${searchTerm}"`);
+    console.log(`🔎 Requête MongoDB sur la péricope pour le mot-clé : "${searchTerm}"`);
 
-    // Recherche insensible à la casse dans les trois colonnes liturgiques
+    // ✅ REQUÊTE MISE À JOUR : Recherche sur l'intégralité des nouveaux champs multiniveaux
     const pericope = await Pericope.findOne({
       $or: [
+        { dimanche_ou_fete: { $regex: searchTerm, $options: "i" } },
         { ancien_testament: { $regex: searchTerm, $options: "i" } },
-        { epitre: { $regex: searchTerm, $options: "i" } },
-        { evangile: { $regex: searchTerm, $options: "i" } }
+        { epitre_1: { $regex: searchTerm, $options: "i" } },
+        { epitre_2: { $regex: searchTerm, $options: "i" } },
+        { epitre_3: { $regex: searchTerm, $options: "i" } },
+        { evangile_1: { $regex: searchTerm, $options: "i" } },
+        { evangile_2: { $regex: searchTerm, $options: "i" } },
+        { evangile_3: { $regex: searchTerm, $options: "i" } }
       ]
     }).lean();
 
     return pericope || null;
   } catch (error) {
     console.error("Erreur critique lors de la recherche de la péricope :", error);
-    return null; // Retourne null en sécurité pour ne pas faire crasher l'API principale
+    return null;
   }
 }

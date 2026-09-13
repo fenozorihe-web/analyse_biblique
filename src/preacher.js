@@ -147,7 +147,7 @@ export async function preachBibleText(userBibleText, pericopeData) {
     // TRAITEMENT ET FORMATAGE MUTUALISÉ DU JSON REÇU
     try {
         const rawData = JSON.parse(responseText);
-        console.log("Le rawData est constitué de :", rawData);
+        // console.log("Le rawData est constitué de :", rawData);
 
         // ✅ CORRECTION 2 : Clôture parfaite de l'intégration template string et de la boucle map
         const htmlSermon = `

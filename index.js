@@ -135,31 +135,43 @@ app.post('/api/prediction', async (req, res) => {
   }
 });
 
-// ✅ ROUTE 1 : Réceptionner et enregistrer les données du formulaire
+// ✅ ROUTE AJOUTPERICOPE CORRIGÉE : Validation assouplie (Seules les lectures n°1 sont obligatoires)
 app.post('/api/ajoutPericope', async (req, res) => {
   try {
-    const { dimanche_ou_fete, ancien_testament, 
+    const { 
+      dimanche_ou_fete, 
+      ancien_testament, 
       epitre_1, epitre_2, epitre_3,
-      evangile_1, evangile_2, evangile_3 } = req.body;
+      evangile_1, evangile_2, evangile_3 
+    } = req.body;
 
-    if (!dimanche_ou_fete || !ancien_testament 
-      || !epitre_1 || !epitre_2 || !epitre_3
-      || !evangile_1 || !evangile_2 || !evangile_3) {
-      return res.status(400).json({ success: false, message: "Tous les champs sont obligatoires." });
+    // Seuls les textes de base fondamentaux de la liturgie sont exigés
+    if (!dimanche_ou_fete || !ancien_testament || !epitre_1 || !evangile_1) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Le nom de la fête, l'Ancien Testament, l'Épître 1 et l'Évangile 1 sont obligatoires." 
+      });
     }
 
+    // Transmission sécurisée vers le gestionnaire d'insertion
     const result = await insertPericope({ 
-      dimanche_ou_fete, ancien_testament, 
-      epitre_1, epitre_2, epitre_3,
-      evangile_1, evangile_2, evangile_3
+      dimanche_ou_fete, 
+      ancien_testament, 
+      epitre_1: epitre_1 || "", 
+      epitre_2: epitre_2 || "", 
+      epitre_3: epitre_3 || "",
+      evangile_1: evangile_1 || "", 
+      evangile_2: evangile_2 || "", 
+      evangile_3: evangile_3 || ""
     });
+    
     return res.status(200).json(result);
 
   } catch (error) {
-    console.error("❌ Erreur critique sur la route /api/ajoutPericope :", error); //
+    console.error("❌ Erreur critique sur la route /api/ajoutPericope :", error);
     return res.status(500).json({ 
       success: false, 
-      message: "Une erreur interne est survenue lors de l'importation de la péricope." //
+      message: "Une erreur interne est survenue lors de l'importation de la péricope." 
     });
   }
 });
