@@ -21,6 +21,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
  */
 export async function preachBibleText(userBibleText, pericopeData) {
     
+  console.log("Le text à prédiquer est:", userBibleText, "et le pericopeData et:", pericopeData);
   // Préparation du contexte des lectures liturgiques s'il a été trouvé dans MongoDB
   let contextePericopePrompt = "L'utilisateur étudie ce texte de manière isolée.";
   let detailsLecturesHtml = `<p class="text-xs text-slate-500 italic">Aucune péricope liturgique associée trouvée dans MongoDB pour ce texte.</p>`;
