@@ -46,6 +46,8 @@ export async function preachBibleText(userBibleText, pericopeData) {
         epitre="", evangile=""
       }
 
+      console.log("Le pericope correspondant au nom de dimanche où on predique le texte", userBibleText, "est composé de l'ancien testament:", pericopeData.ancien_testament, "l'épitre:", epitre, "et lévangile:", evangile);
+
       contextePericopePrompt = `Ce texte fait partie d'une péricope liturgique complète pour le jour : "${pericopeData.dimanche_ou_fete}".
       Les textes associés officiels dans la base MongoDB sont :
       - Ancien Testament : ${pericopeData.ancien_testament}
@@ -128,22 +130,22 @@ export async function preachBibleText(userBibleText, pericopeData) {
         responseText = response.text;
 
     } catch (firstError) {
-        // ✅ CORRECTION DU NOM : Bascule sur la version de secours reconnue par l'API v1beta
-        console.warn("⚠️ Le modèle principal est saturé (Erreur 503). Bascule automatique sur gemini-1.5-flash-002 de secours...");
+        console.warn("⚠️ Le modèle principal est saturé (Erreur 503). Bascule automatique sur gemini-1.5-flash-002...");
         
         try {
             const fallbackResponse = await ai.models.generateContent({
-                model: "gemini-1.5-flash-002", // Nom de modèle officiel stable et supporté
+                model: "gemini-1.5-flash-002", 
                 contents: `Prédique le texte suivant : "${userBibleText}"`,
                 config: requestConfig
             });
             responseText = fallbackResponse.text;
             
         } catch (fallbackError) {
-            console.log("⚠️ Deuxième essai de sécurité alternative avec gemini-2.5-pro...");
+            // ✅ SÉCURITÉ MISE À JOUR : Utilisation du modèle recommandé par le message d'erreur de Google
+            console.log("⚠️ Troisième essai de sécurité alternative avec gemini-3.1-pro-preview...");
             try {
                 const proResponse = await ai.models.generateContent({
-                    model: "gemini-2.5-pro", 
+                    model: "gemini-3.1-pro-preview", // Version 2026 mise à jour
                     contents: `Prédique le texte suivant : "${userBibleText}"`,
                     config: requestConfig
                 });
