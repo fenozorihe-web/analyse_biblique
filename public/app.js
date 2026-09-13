@@ -1,6 +1,8 @@
 import {displayAnalyse} from "./models/fonctions.js"
 // import {displayPredication} from "./fonctions.js"
 import { getAjoutPericopeTemplate } from "./models/ajoutApp.js";
+import { getAjoutProverbTemplate } from "./modules/templateProverb.js";
+
 // ✅ NOUVEL IMPORT ÉPURÉ
 import { initBibleCalendar } from "./models/bibleSelector.js"; 
 
@@ -30,41 +32,112 @@ const formContainer = document.getElementById('formContainer');
 // URL de votre API Backend Node.js
 const API = '/api'; 
 
-// ==========================================
-// ⚙️ GESTION DU BOUTON ET DU FORMULAIRE D'AJOUT
-// ==========================================
+// =======================================================
+// ⚙️ SECTIONS DE GESTION DU TOGGLE ADMINISTRATIVE (PROVERBES ET PERICOPES)
+// =======================================================
+
 const mainFormSection = document.getElementById('mainFormSection'); // Récupération du formulaire principal
+const btnToggleProverbAdmin = document.getElementById('btnToggleProverbAdmin'); // Nouveau bouton
 
-if (btnToggleAdmin && adminBlock && formContainer && mainFormSection) {
-    btnToggleAdmin.addEventListener('click', async () => {
+if (btnToggleAdmin && btnToggleProverbAdmin && adminBlock && formContainer && mainFormSection) {
+    
+    // Logiciel de fermeture centralisée pour nettoyer l'écran
+    const closeAllAdminPanels = () => {
+        adminBlock.classList.add('hidden');
+        mainFormSection.classList.remove('hidden');
+        btnToggleAdmin.textContent = "⚙️ Gérer les Péricopes";
+        btnToggleProverbAdmin.textContent = "🍃 Gérer les Ohabolana";
+    };
 
-        console.log("L'addEventListener est maintenant entendu.");
-        
-        // 🔄 CAS 1 : L'administration est ouverte, l'utilisateur CLIQUE SUR FERMER
-        if (!adminBlock.classList.contains('hidden')) {
-            adminBlock.classList.add('hidden'); // Ferme l'administration
-            
-            // ✅ CORRECTION FIXE : Fait réapparaître instantanément le formulaire principal
-            mainFormSection.classList.remove('hidden'); 
-            
-            btnToggleAdmin.textContent = "⚙️ Gérer les Péricopes";
+    // 1. Bouton d'administration n°1 : Les Péricopes
+    btnToggleAdmin.addEventListener('click', () => {
+        if (!adminBlock.classList.contains('hidden') && btnToggleAdmin.textContent.includes('Fermer')) {
+            closeAllAdminPanels();
             return;
         }
-
-        // 🔄 CAS 2 : L'administration est fermée, l'utilisateur CLIQUE SUR OUVRIR
         formContainer.innerHTML = `<p class="text-center text-slate-400 italic py-4">Chargement du formulaire...</p>`;
         adminBlock.classList.remove('hidden');
-        mainFormSection.classList.add('hidden'); // Cache complètement le formulaire principal
+        mainFormSection.classList.add('hidden');
         btnToggleAdmin.textContent = "❌ Fermer l'Administration";
+        btnToggleProverbAdmin.textContent = "🍃 Gérer les Ohabolana";
 
-        const template = getAjoutPericopeTemplate();
-        console.log(template);
-
-        formContainer.innerHTML = template;
-
-        // Activation de l'écouteur d'événement sur le formulaire d'ajout
+        formContainer.innerHTML = getAjoutPericopeTemplate();
         setupPericopeFormListener();
     });
+
+    // 2. Bouton d'administration n°2 : Les Ohabolana
+    btnToggleProverbAdmin.addEventListener('click', () => {
+        if (!adminBlock.classList.contains('hidden') && btnToggleProverbAdmin.textContent.includes('Fermer')) {
+            closeAllAdminPanels();
+            return;
+        }
+        formContainer.innerHTML = `<p class="text-center text-slate-400 italic py-4">Chargement du formulaire...</p>`;
+        adminBlock.classList.remove('hidden');
+        mainFormSection.classList.add('hidden');
+        btnToggleProverbAdmin.textContent = "❌ Fermer l'Administration";
+        btnToggleAdmin.textContent = "⚙️ Gérer les Péricopes";
+
+        formContainer.innerHTML = getAjoutProverbTemplate();
+        setupProverbFormListener(); // Lance l'écouteur ci-dessous
+    });
+}
+
+/**
+ * Configure la gestion de la soumission du formulaire d'Ohabolana
+ */
+function setupProverbFormListener() {
+    const form = document.getElementById("formProverb");
+    const proverbLoader = document.getElementById("proverbLoader");
+    const btnSubmitProverb = document.getElementById("btnSubmitProverb");
+
+    if (form) {
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            // Création propre du tableau à partir de la chaîne de caractères découpée par virgules
+            const rawConcepts = document.getElementById("concepts_cles").value.split(",");
+            const cleanedConcepts = rawConcepts.map(c => c.trim().toLowerCase()).filter(c => c !== "");
+
+            const payload = {
+                proverbe_malagasy: document.getElementById("proverbe_malagasy").value.trim(),
+                traduction_francaise: document.getElementById("traduction_francaise").value.trim(),
+                concepts_cles: cleanedConcepts, // Envoi sous forme d'Array natif conforme au Schema
+                explication_cultureelle: document.getElementById("explication_culturelle").value.trim()
+            };
+
+            if (proverbLoader) proverbLoader.classList.remove("hidden");
+            if (btnSubmitProverb) {
+                btnSubmitProverb.disabled = true;
+                btnSubmitProverb.classList.add("opacity-75", "cursor-not-allowed");
+            }
+
+            try {
+                const response = await fetch(`${API}/ajoutProverbe`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert("🎉 Succès : Le ohabolana a été enregistré avec succès dans MongoDB Atlas !");
+                    form.reset();
+                } else {
+                    alert(`❌ Échec : ${data.message || "Erreur de traitement"}`);
+                }
+            } catch (error) {
+                console.error("Erreur insertion proverbe :", error);
+                alert("Impossible d'enregistrer le proverbe. Vérifiez la connexion du serveur.");
+            } finally {
+                if (proverbLoader) proverbLoader.classList.add("hidden");
+                if (btnSubmitProverb) {
+                    btnSubmitProverb.disabled = false;
+                    btnSubmitProverb.classList.remove("opacity-75", "cursor-not-allowed");
+                }
+            }
+        });
+    }
 }
 
 /**

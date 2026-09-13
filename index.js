@@ -7,9 +7,8 @@ import mongoose from "mongoose";
 
 // Importation de vos modules personnalisés
 import { analyzeBibleText } from "./src/analyzer.js";
-import { findMatchingProverbs } from "./src/searchEngine.js";
+import { findMatchingProverbs, findPericopeByText, insertProverb } from "./src/searchEngine.js";
 
-import { findPericopeByText } from "./src/searchEngine.js";
 import { preachBibleText } from "./src/preacher.js";
 
 // ✅ NOUVEAUX IMPORTS POUR LA PERICOPE
@@ -172,6 +171,34 @@ app.post('/api/ajoutPericope', async (req, res) => {
     return res.status(500).json({ 
       success: false, 
       message: "Une erreur interne est survenue lors de l'importation de la péricope." 
+    });
+  }
+});
+
+// 2. Ajoutez cette nouvelle route POST juste en dessous de votre route /api/ajoutPericope
+app.post('/api/ajoutProverbe', async (req, res) => {
+  try {
+    const { proverbe_malagasy, traduction_francaise, concepts_cles, explication_cultureelle } = req.body;
+
+    if (!proverbe_malagasy || !traduction_francaise || !concepts_cles || !explication_cultureelle) {
+      return res.status(400).json({ success: false, message: "Tous les champs d'étude du Ohabolana sont obligatoires." });
+    }
+
+    // Lancement de l'insertion Mongoose
+    const result = await insertProverb({
+      proverbe_malagasy,
+      traduction_francaise,
+      concepts_cles,
+      explication_cultureelle
+    });
+
+    return res.status(200).json(result);
+
+  } catch (error) {
+    console.error("❌ Erreur critique sur la route /api/ajoutProverbe :", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: "Une erreur interne s'est produite lors de l'insertion du ohabolana." 
     });
   }
 });

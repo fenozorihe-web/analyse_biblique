@@ -21,7 +21,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
  */
 export async function preachBibleText(userBibleText, pericopeData) {
     
-  console.log("Le text à prédiquer est:", userBibleText, "et le pericopeData et:", pericopeData);
+  // console.log("Le text à prédiquer est:", userBibleText, "et le pericopeData et:", pericopeData);
   // Préparation du contexte des lectures liturgiques s'il a été trouvé dans MongoDB
   let contextePericopePrompt = "L'utilisateur étudie ce texte de manière isolée.";
   let detailsLecturesHtml = `<p class="text-xs text-slate-500 italic">Aucune péricope liturgique associée trouvée dans MongoDB pour ce texte.</p>`;
@@ -46,7 +46,7 @@ export async function preachBibleText(userBibleText, pericopeData) {
         epitre="", evangile=""
       }
 
-      console.log("Le pericope correspondant au nom de dimanche où on predique le texte", userBibleText, "est composé de l'ancien testament:", pericopeData.ancien_testament, "l'épitre:", epitre, "et lévangile:", evangile);
+      console.log("Le pericope correspondant au nom de dimanche où on predique le texte", userBibleText, "est composé de l'ancien testament:", pericopeData.ancien_testament, ", l'épitre:", epitre, ", et lévangile:", evangile);
 
       contextePericopePrompt = `Ce texte fait partie d'une péricope liturgique complète pour le jour : "${pericopeData.dimanche_ou_fete}".
       Les textes associés officiels dans la base MongoDB sont :

@@ -67,3 +67,22 @@ export async function findPericopeByText(userText) {
     return null;
   }
 }
+
+/**
+ * Insère un nouveau proverbe traditionnel malgache dans MongoDB Atlas
+ * @param {Object} proverbData 
+ */
+export async function insertProverb(proverbData) {
+  try {
+    const nouveauProverbe = new Proverb(proverbData);
+    await nouveauProverbe.save();
+    return { success: true, message: "Ohabolana enregistré avec succès !" };
+  } catch (error) {
+    console.error("Erreur lors de l'enregistrement du Proverbe :", error);
+    // Gestion de la contrainte d'unicité (faille de doublons)
+    if (error.code === 11000) {
+      return { success: false, message: "Ce ohabolana existe déjà dans votre base de données." };
+    }
+    throw error;
+  }
+}
