@@ -128,19 +128,30 @@ export async function preachBibleText(userBibleText, pericopeData) {
         responseText = response.text;
 
     } catch (firstError) {
-        console.warn("⚠️ Le modèle principal est saturé (Erreur 503). Bascule automatique sur gemini-1.5-flash de secours...");
+        // ✅ CORRECTION DU NOM : Bascule sur la version de secours reconnue par l'API v1beta
+        console.warn("⚠️ Le modèle principal est saturé (Erreur 503). Bascule automatique sur gemini-1.5-flash-002 de secours...");
         
         try {
             const fallbackResponse = await ai.models.generateContent({
-                model: "gemini-1.5-flash", 
+                model: "gemini-1.5-flash-002", // Nom de modèle officiel stable et supporté
                 contents: `Prédique le texte suivant : "${userBibleText}"`,
                 config: requestConfig
             });
             responseText = fallbackResponse.text;
             
         } catch (fallbackError) {
-            console.error("❌ Les deux modèles de l'API Gemini ont échoué.", fallbackError);
-            throw fallbackError;
+            console.log("⚠️ Deuxième essai de sécurité alternative avec gemini-2.5-pro...");
+            try {
+                const proResponse = await ai.models.generateContent({
+                    model: "gemini-2.5-pro", 
+                    contents: `Prédique le texte suivant : "${userBibleText}"`,
+                    config: requestConfig
+                });
+                responseText = proResponse.text;
+            } catch (finalError) {
+                console.error("❌ Tous les modèles de l'API Gemini ont échoué.", finalError);
+                throw finalError;
+            }
         }
     }
 
