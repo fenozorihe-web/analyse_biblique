@@ -1,15 +1,12 @@
-// ✅ IMPORTATION DE LA BASE DE DONNÉES DEPUIS LE FICHIER EXTERNE
+// public/models/bibleSelector.js
 import { BIBLE_STRUCTURE } from "./bibleData.js"; 
 
-
-// États internes de la sélection de manière isolée
 let currentStep = 1; 
 let selectedLivre = "";
 let selectedChapitre = "";
 let selectedVersetDebut = null;
 let selectedVersetFin = null;
-let isListenersConfigured = false;
-// ✅ FIX CRUCIAL : Variable globale au module pour suivre l'input actif en temps réel
+let isListenersConfigured = false; 
 let inputCibleActuel = null; 
 
 /**
@@ -96,10 +93,9 @@ export function initBibleCalendar(inputCible) {
                 modalGridContainer.appendChild(btn);
             });
         }
-        // ÉTAPE 2 : Choix du Chapitre (Dynamique)
+        // ÉTAPE 2 : Choix du Chapitre
         else if (currentStep === 2) {
             modalGridContainer.className = "p-6 overflow-y-auto grid grid-cols-5 gap-2 max-h-[50vh]";
-            // ✅ CORRECTION : Le nombre exact de chapitres correspond à la longueur du tableau du livre
             const totalChapitres = BIBLE_STRUCTURE[selectedLivre].length;
 
             for (let i = 1; i <= totalChapitres; i++) {
@@ -115,10 +111,9 @@ export function initBibleCalendar(inputCible) {
                 modalGridContainer.appendChild(btn);
             }
         }
-        // ÉTAPE 3 : Choix des Versets (Précision Absolue)
+        // ÉTAPE 3 : Choix des Versets
         else if (currentStep === 3) {
             modalGridContainer.className = "p-6 overflow-y-auto grid grid-cols-6 gap-1.5 max-h-[50vh]";
-            // ✅ CORRECTION : Récupération du nombre exact de versets pour ce chapitre précis (Index i - 1)
             const totalVersets = BIBLE_STRUCTURE[selectedLivre][selectedChapitre - 1]; 
 
             for (let i = 1; i <= totalVersets; i++) {

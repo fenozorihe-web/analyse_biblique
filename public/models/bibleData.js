@@ -1,5 +1,7 @@
 // public/models/bibleData.js
+// Base de données structurelle complète et vérifiée du Canon Protestant (66 Livres)
 export const BIBLE_STRUCTURE = {
+    //📜 ANCIEN TESTAMENT
     "Genèse":,
     "Exode":,
     "Lévitique":,
@@ -40,9 +42,7 @@ export const BIBLE_STRUCTURE = {
     "Zacharie":,
     "Malachie":,
 
-    // ==========================================
-    // ⛪ NOUVEAU TESTAMENT (27 Livres)
-    // ==========================================
+    //⛪ NOUVEAU TESTAMENT
     "Matthieu":,
     "Marc":,
     "Luc":,
@@ -69,5 +69,5 @@ export const BIBLE_STRUCTURE = {
     "2 Jean":,
     "3 Jean":,
     "Jude":,
-    "Apocalypse": [20,29,22,11,14,17,17,13,21,11,19,17,18,20,8,21,18,24,21,15,27,21]
+    "Apocalypse": [20, 29, 22, 11, 14, 17, 17, 13, 21, 11, 19, 17, 18, 20, 8, 21, 18, 24, 21, 15, 27, 21]
 };
