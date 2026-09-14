@@ -89,26 +89,76 @@ function setupProverbFormListener() {
     const form = document.getElementById("formProverb");
     const proverbLoader = document.getElementById("proverbLoader");
     const btnSubmitProverb = document.getElementById("btnSubmitProverb");
+    
+    // Nouveaux boutons liés à l'automatisme IA
+    const btnAiAnalyzeProverb = document.getElementById("btnAiAnalyzeProverb");
+    const aiProverbLoader = document.getElementById("aiProverbLoader");
 
+    // 🤖 ACTION : Clic sur le bouton d'analyse par l'IA
+    if (btnAiAnalyzeProverb) {
+        btnAiAnalyzeProverb.addEventListener('click', async () => {
+            const malagasyText = document.getElementById("proverbe_malagasy").value.trim();
+
+            if (!malagasyText) {
+                alert("Veuillez d'abord écrire ou coller un proverbe en malgache avant de lancer l'IA.");
+                document.getElementById("proverbe_malagasy").focus();
+                return;
+            }
+
+            // Verrouillage de l'interface
+            if (aiProverbLoader) aiProverbLoader.classList.remove("hidden");
+            btnAiAnalyzeProverb.disabled = true;
+            btnAiAnalyzeProverb.classList.add("opacity-75");
+
+            try {
+                const response = await fetch(`${API}/analyseProverbe`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ malagasyText: malagasyText })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Injection automatique des données renvoyées par Gemini dans les champs du formulaire !
+                    document.getElementById("traduction_francaise").value = data.traduction_francaise;
+                    document.getElementById("explication_culturelle").value = data.explication_culturelle;
+                    
+                    // Transformation du tableau de concepts en chaîne de caractères séparée par des virgules
+                    document.getElementById("concepts_cles").value = (data.concepts_cles || []).join(", ");
+                } else {
+                    alert(`❌ Erreur IA : ${data.message}`);
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Impossible de joindre le serveur d'analyse IA.");
+            } finally {
+                if (aiProverbLoader) aiProverbLoader.classList.add("hidden");
+                btnAiAnalyzeProverb.disabled = false;
+                btnAiAnalyzeProverb.classList.remove("opacity-75");
+            }
+        });
+    }
+
+    // ENREGISTREMENT FINAL DANS MONGODB ATLAS
     if (form) {
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
 
-            // Création propre du tableau à partir de la chaîne de caractères découpée par virgules
             const rawConcepts = document.getElementById("concepts_cles").value.split(",");
             const cleanedConcepts = rawConcepts.map(c => c.trim().toLowerCase()).filter(c => c !== "");
 
             const payload = {
                 proverbe_malagasy: document.getElementById("proverbe_malagasy").value.trim(),
                 traduction_francaise: document.getElementById("traduction_francaise").value.trim(),
-                concepts_cles: cleanedConcepts, // Envoi sous forme d'Array natif conforme au Schema
-                explication_cultureelle: document.getElementById("explication_culturelle").value.trim()
+                concepts_cles: cleanedConcepts,
+                explication_cultureelle: document.getElementById("explication_culturelle").value.trim() // S'adapte à votre index.js actuel
             };
 
             if (proverbLoader) proverbLoader.classList.remove("hidden");
             if (btnSubmitProverb) {
                 btnSubmitProverb.disabled = true;
-                btnSubmitProverb.classList.add("opacity-75", "cursor-not-allowed");
+                btnSubmitProverb.classList.add("opacity-75");
             }
 
             try {
@@ -119,21 +169,20 @@ function setupProverbFormListener() {
                 });
 
                 const data = await response.json();
-
                 if (data.success) {
                     alert("🎉 Succès : Le ohabolana a été enregistré avec succès dans MongoDB Atlas !");
                     form.reset();
                 } else {
-                    alert(`❌ Échec : ${data.message || "Erreur de traitement"}`);
+                    alert(`❌ Échec : ${data.message || "Erreur"}`);
                 }
             } catch (error) {
-                console.error("Erreur insertion proverbe :", error);
-                alert("Impossible d'enregistrer le proverbe. Vérifiez la connexion du serveur.");
+                console.error(error);
+                alert("Erreur réseau lors de la sauvegarde.");
             } finally {
                 if (proverbLoader) proverbLoader.classList.add("hidden");
                 if (btnSubmitProverb) {
                     btnSubmitProverb.disabled = false;
-                    btnSubmitProverb.classList.remove("opacity-75", "cursor-not-allowed");
+                    btnSubmitProverb.classList.remove("opacity-75");
                 }
             }
         });

@@ -203,6 +203,33 @@ app.post('/api/ajoutProverbe', async (req, res) => {
   }
 });
 
+// 1. Ajoutez l'importation en haut de votre index.js
+import { analyzeProverbWithAi } from "./src/proverbAnalyzer.js";
+
+// 2. Ajoutez cette route juste au-dessus de votre route /api/ajoutProverbe
+app.post('/api/analyseProverbe', async (req, res) => {
+  try {
+    const { malagasyText } = req.body;
+    if (!malagasyText || malagasyText.trim() === "") {
+      return res.status(400).json({ success: false, message: "Le texte malgache est requis." });
+    }
+
+    console.log(`🤖 Demande d'analyse IA pour le ohabolana : "${malagasyText.substring(0, 30)}..."`);
+    const aiResult = await analyzeProverbWithAi(malagasyText);
+
+    return res.status(200).json({
+      success: true,
+      traduction_francaise: aiResult.traduction_francaise,
+      concepts_cles: aiResult.concepts_cles,
+      explication_culturelle: aiResult.explication_culturelle
+    });
+
+  } catch (error) {
+    console.error("❌ Erreur sur la route /api/analyseProverbe :", error);
+    return res.status(500).json({ success: false, message: "L'IA n'a pas pu traiter ce proverbe." });
+  }
+});
+
 // === DEMARRAGE DU SERVEUR ===
 app.listen(PORT, () => {
   console.log(`🚀 Serveur actif sur http://localhost:${PORT}`);
