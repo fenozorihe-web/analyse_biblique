@@ -36,7 +36,7 @@ export async function analyzeProverbWithAi(malagasyText) {
     let responseText = "";
 
     try {
-        console.log("🤖 IA Proverbe : Tentative avec gemini-2.5-flash...");
+        console.log("🤖 IA Proverbe : Tentative initiale avec gemini-2.5-flash...");
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: `Analyse ce ohabolana malagasy : "${malagasyText}"`,
@@ -44,10 +44,12 @@ export async function analyzeProverbWithAi(malagasyText) {
         });
         responseText = response.text;
     } catch (err) {
-        console.warn("⚠️ Mode principal saturé. Bascule de secours sur gemini-1.5-flash-002...");
+        // ✅ CORRECTION DU NOM : Remplacement du vieux modèle 404 par la version moderne de 2026
+        console.warn("⚠️ Le modèle principal est saturé (Erreur 503). Bascule automatique sur gemini-3.1-pro-preview de secours...");
+        
         try {
             const fallback = await ai.models.generateContent({
-                model: "gemini-1.5-flash-002",
+                model: "gemini-3.1-pro-preview", // Modèle officiel stable et recommandé en v1beta
                 contents: `Analyse ce ohabolana malagasy : "${malagasyText}"`,
                 config: requestConfig
             });
