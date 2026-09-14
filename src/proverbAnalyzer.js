@@ -4,11 +4,16 @@ import path from "path";
 
 dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// Stockage de vos clés gratuites dans un tableau de rotation
+const API_KEYS = [
+    process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY, // Clé principale
+    process.env.GEMINI_API_KEY_2,                               // Clé de secours A
+    process.env.GEMINI_API_KEY_3                                // Clé de secours B
+].filter(key => key !== undefined && key !== ""); // Élimine les variables vides
 
 /**
- * Analyse anthropologique et traduction d'un ohabolana malagasy via Gemini
- * @param {string} malagasyText - Le proverbe en langue malgache
+ * Analyse un ohabolana malagasy avec tolérance aux pannes et rotation de clés API
+ * @param {string} malagasyText 
  */
 export async function analyzeProverbWithAi(malagasyText) {
     const requestConfig = {
@@ -21,7 +26,7 @@ export async function analyzeProverbWithAi(malagasyText) {
                 concepts_cles: { 
                     type: "array", 
                     items: { type: "string" },
-                    description: "3 à 5 mots-clés conceptuels en français traduisant le sens profond pour indexation de recherche."
+                    description: "3 à 5 mots-clés conceptuels en français traduisant le sens profond."
                 },
                 explication_culturelle: { type: "string" }
             },
@@ -33,32 +38,37 @@ export async function analyzeProverbWithAi(malagasyText) {
         Génère une traduction élégante en français et une explication culturelle riche détaillant l'usage et le contexte sociétal traditionnel de ce ohabolana.`
     };
 
-    let responseText = "";
+    // Liste ordonnée de vos modèles préférés par ordre de performance
+    const MODELES_A_TESTER = ["gemini-2.5-flash", "gemini-3.1-pro-preview"];
+    
+    // Algorithme de double boucle : On teste chaque modèle avec chaque clé API
+    for (const modelName of MODELES_A_TESTER) {
+        for (let i = 0; i < API_KEYS.length; i++) {
+            const currentKey = API_KEYS[i];
+            
+            try {
+                console.log(`🤖 [IA Proverbe] Essai : Modèle [${modelName}] avec Clé API n°${i + 1}...`);
+                
+                // Initialisation dynamique du client avec la clé active de la rotation
+                const ai = new GoogleGenAI({ apiKey: currentKey });
+                
+                const response = await ai.models.generateContent({
+                    model: modelName,
+                    contents: `Analyse ce ohabolana malagasy : "${malagasyText}"`,
+                    config: requestConfig
+                });
 
-    try {
-        console.log("🤖 IA Proverbe : Tentative initiale avec gemini-2.5-flash...");
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: `Analyse ce ohabolana malagasy : "${malagasyText}"`,
-            config: requestConfig
-        });
-        responseText = response.text;
-    } catch (err) {
-        // ✅ CORRECTION DU NOM : Remplacement du vieux modèle 404 par la version moderne de 2026
-        console.warn("⚠️ Le modèle principal est saturé (Erreur 503). Bascule automatique sur gemini-3.1-pro-preview de secours...");
-        
-        try {
-            const fallback = await ai.models.generateContent({
-                model: "gemini-3.1-pro-preview", // Modèle officiel stable et recommandé en v1beta
-                contents: `Analyse ce ohabolana malagasy : "${malagasyText}"`,
-                config: requestConfig
-            });
-            responseText = fallback.text;
-        } catch (fallbackError) {
-            console.error("❌ Échec des deux environnements Gemini pour l'ohabolana", fallbackError);
-            throw fallbackError;
+                // Si l'appel réussit, on renvoie immédiatement le résultat au frontend !
+                console.log(`✅ Succès avec le modèle [${modelName}] et la Clé n°${i + 1}`);
+                return JSON.parse(response.text);
+
+            } catch (error) {
+                console.warn(`⚠️ Échec (Erreur ${error.status || 'Quota'}) sur le modèle [${modelName}] avec la Clé n°${i + 1}. Transition...`);
+                // Le code ignore l'erreur et passe immédiatement à l'itération suivante (clé ou modèle suivant)
+            }
         }
     }
 
-    return JSON.parse(responseText);
+    // Si le code arrive ici, c'est que toutes les clés et tous les modèles ont échoué
+    throw new Error("Désolé, toutes les clés API de secours et tous les modèles gratuits de Google sont actuellement saturés. Veuillez réessuyer dans quelques minutes.");
 }

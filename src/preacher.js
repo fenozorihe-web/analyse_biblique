@@ -20,41 +20,41 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
  * @returns {Promise<Object>} L'objet contenant le HTML formaté et les mots-clés
  */
 export async function preachBibleText(userBibleText, pericopeData) {
-    
+
   // console.log("Le text à prédiquer est:", userBibleText, "et le pericopeData et:", pericopeData);
   // Préparation du contexte des lectures liturgiques s'il a été trouvé dans MongoDB
   let contextePericopePrompt = "L'utilisateur étudie ce texte de manière isolée.";
   let detailsLecturesHtml = `<p class="text-xs text-slate-500 italic">Aucune péricope liturgique associée trouvée dans MongoDB pour ce texte.</p>`;
-  
 
-    if (pericopeData) {
 
-      let epitre = "", evangile = ""
-      if(userBibleText===pericopeData.evangile_1){
-        epitre = pericopeData.epitre_1,
+  if (pericopeData) {
+
+    let epitre = "", evangile = ""
+    if (userBibleText === pericopeData.evangile_1) {
+      epitre = pericopeData.epitre_1,
         evangile = pericopeData.evangile_2
 
-      } else if (userBibleText===pericopeData.evangile_2){
-        epitre = pericopeData.epitre_2,
+    } else if (userBibleText === pericopeData.evangile_2) {
+      epitre = pericopeData.epitre_2,
         evangile = pericopeData.evangile_3
-  
-      } else if (userBibleText===pericopeData.evangile_3){
-        epitre = pericopeData.epitre_3,
+
+    } else if (userBibleText === pericopeData.evangile_3) {
+      epitre = pericopeData.epitre_3,
         evangile = pericopeData.evangile_1
-  
-      } else{
-        epitre="", evangile=""
-      }
 
-      console.log("Le pericope correspondant au nom de dimanche où on predique le texte", userBibleText, "est composé de l'ancien testament:", pericopeData.ancien_testament, ", l'épitre:", epitre, ", et lévangile:", evangile);
+    } else {
+      epitre = "", evangile = ""
+    }
 
-      contextePericopePrompt = `Ce texte fait partie d'une péricope liturgique complète pour le jour : "${pericopeData.dimanche_ou_fete}".
+    console.log("Le pericope correspondant au nom de dimanche où on predique le texte", userBibleText, "est composé de l'ancien testament:", pericopeData.ancien_testament, ", l'épitre:", epitre, ", et lévangile:", evangile);
+
+    contextePericopePrompt = `Ce texte fait partie d'une péricope liturgique complète pour le jour : "${pericopeData.dimanche_ou_fete}".
       Les textes associés officiels dans la base MongoDB sont :
       - Ancien Testament : ${pericopeData.ancien_testament}
       - Épître : ${epitre}
       - Évangile : ${evangile}`;
 
-      detailsLecturesHtml = `
+    detailsLecturesHtml = `
         <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 text-xs space-y-1 text-slate-700">
           <p class="font-bold text-slate-900 mb-1">📅 Lectures de la Péricope (${pericopeData.dimanche_ou_fete}) :</p>
           <p>📖 <strong>Ancien Testament :</strong> ${pericopeData.ancien_testament || "Non spécifié"}</p>
@@ -62,51 +62,51 @@ export async function preachBibleText(userBibleText, pericopeData) {
           <p>⛪ <strong>Évangile :</strong> ${evangile || "Non spécifié"}</p>
         </div>
       `;
-    }
+  }
 
-    const requestConfig = {
-        temperature: 0.2, // Rigueur académique
-        responseMimeType: "application/json",
-        responseSchema: {
+  const requestConfig = {
+    temperature: 0.2, // Rigueur académique
+    responseMimeType: "application/json",
+    responseSchema: {
+      type: "object",
+      properties: {
+        genre_litteraire: { type: "string" },
+        interrelations_textes: { type: "string" },
+        type_predication: { type: "string" },
+        theme_principal: { type: "string" },
+        // ✅ CORRECTION 1 : Changement du type string vers ARRAY pour être compatible avec les fonctions de recherche MongoDB
+        mots_cles_originaux: {
+          type: "array",
+          items: { type: "string" },
+          description: "Tableau de 3 à 5 mots-clés conceptuels extraits en français (ex: ['repentance', 'amour']) correspondants au sens des mots originaux (hébreu/grec) pour chercher des Ohabolana."
+        },
+        introduction: { type: "string" },
+        points_principaux: {
+          type: "array",
+          items: {
             type: "object",
             properties: {
-                genre_litteraire: { type: "string" },
-                interrelations_textes: { type: "string" },
-                type_predication: { type: "string" },
-                theme_principal: { type: "string" },
-                // ✅ CORRECTION 1 : Changement du type string vers ARRAY pour être compatible avec les fonctions de recherche MongoDB
-                mots_cles_originaux: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Tableau de 3 à 5 mots-clés conceptuels extraits en français (ex: ['repentance', 'amour']) correspondants au sens des mots originaux (hébreu/grec) pour chercher des Ohabolana."
-                },
-                introduction: { type: "string" },
-                points_principaux: {
-                    type: "array",
-                    items: {
-                        type: "object",
-                        properties: {
-                            titre: { type: "string" },
-                            explication: { type: "string" },
-                            messages: { type: "string" }
-                        },
-                        required: ["titre", "explication", "messages"]
-                    }
-                },
-                conclusion: { type: "string" }
+              titre: { type: "string" },
+              explication: { type: "string" },
+              messages: { type: "string" }
             },
-            required: [
-                "genre_litteraire",
-                "interrelations_textes",
-                "type_predication",
-                "theme_principal",
-                "mots_cles_originaux",
-                "introduction",
-                "points_principaux",
-                "conclusion"
-            ]
+            required: ["titre", "explication", "messages"]
+          }
         },
-        systemInstruction: `Tu es un professeur d'homilétique expert de la tradition liturgique ecclésiale et de la contextualisation malgache.
+        conclusion: { type: "string" }
+      },
+      required: [
+        "genre_litteraire",
+        "interrelations_textes",
+        "type_predication",
+        "theme_principal",
+        "mots_cles_originaux",
+        "introduction",
+        "points_principaux",
+        "conclusion"
+      ]
+    },
+    systemInstruction: `Tu es un professeur d'homilétique expert de la tradition liturgique ecclésiale et de la contextualisation malgache.
         Tu reçois un texte à prêcher ainsi que les autres lectures de sa péricope.
         Ton rôle est de rédiger le sermon pour le texte biblique selon son genre littéraire propre, et le type de prédication luthérienne convenable.
         
@@ -116,54 +116,56 @@ export async function preachBibleText(userBibleText, pericopeData) {
         2. Dégager un thème principal unifié pour la prédication.
         3. Dégager sous forme de tableau ("mots_cles_originaux") les concepts fondamentaux du texte en français qui découlent des mots-clés originaux (hébreu ou grec) et qui guident le thème.
         4. Développer les points principaux du sermon avec des explications claires et contextuelles selon les mots clés dégagés.`
-    };
+  };
 
-    let responseText = "";
+  // En haut de votre src/preacher.js, remplacez la gestion de l'appel par :
+  const API_KEYS = [
+    process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY,
+    process.env.GEMINI_API_KEY_2,
+    process.env.GEMINI_API_KEY_3
+  ].filter(key => key !== undefined && key !== "");
 
-    try {
-        console.log("🤖 Tentative initiale avec gemini-2.5-flash...");
+  // ... (Conservez votre configuration requestConfig et vos variables HTML) ...
+
+  const MODELES_A_TESTER = ["gemini-2.5-flash", "gemini-3.1-pro-preview"];
+  let responseText = "";
+  let successGeneration = false;
+
+  for (const modelName of MODELES_A_TESTER) {
+    for (let i = 0; i < API_KEYS.length; i++) {
+      if (successGeneration) break;
+
+      try {
+        console.log(`🤖 [Sermon] Essai : Modèle [${modelName}] avec Clé API n°${i + 1}...`);
+        const ai = new GoogleGenAI({ apiKey: API_KEYS[i] });
+
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash", 
-            contents: `Prédique le texte suivant : "${userBibleText}"`,
-            config: requestConfig
+          model: modelName,
+          contents: `Prédique le texte suivant : "${userBibleText}"`,
+          config: requestConfig
         });
+
         responseText = response.text;
-
-    } catch (firstError) {
-        console.warn("⚠️ Le modèle principal est saturé (Erreur 503). Bascule automatique sur gemini-1.5-flash-002...");
-        
-        try {
-            const fallbackResponse = await ai.models.generateContent({
-                model: "gemini-1.5-flash-002", 
-                contents: `Prédique le texte suivant : "${userBibleText}"`,
-                config: requestConfig
-            });
-            responseText = fallbackResponse.text;
-            
-        } catch (fallbackError) {
-            // ✅ SÉCURITÉ MISE À JOUR : Utilisation du modèle recommandé par le message d'erreur de Google
-            console.log("⚠️ Troisième essai de sécurité alternative avec gemini-3.1-pro-preview...");
-            try {
-                const proResponse = await ai.models.generateContent({
-                    model: "gemini-3.1-pro-preview", // Version 2026 mise à jour
-                    contents: `Prédique le texte suivant : "${userBibleText}"`,
-                    config: requestConfig
-                });
-                responseText = proResponse.text;
-            } catch (finalError) {
-                console.error("❌ Tous les modèles de l'API Gemini ont échoué.", finalError);
-                throw finalError;
-            }
-        }
+        successGeneration = true;
+        console.log(`✅ Sermon généré avec succès ! [Livre: ${modelName}, Clé: ${i + 1}]`);
+        break;
+      } catch (err) {
+        console.warn(`⚠️ Modèle [${modelName}] indisponible avec la Clé n°${i + 1}. Recherche d'une alternative...`);
+      }
     }
+  }
 
-    // TRAITEMENT ET FORMATAGE MUTUALISÉ DU JSON REÇU
-    try {
-        const rawData = JSON.parse(responseText);
-        // console.log("Le rawData est constitué de :", rawData);
+  if (!successGeneration) {
+    throw new Error("L'intégralité des serveurs d'IA gratuits de secours sont saturés.");
+  }
 
-        // ✅ CORRECTION 2 : Clôture parfaite de l'intégration template string et de la boucle map
-        const htmlSermon = `
+  // TRAITEMENT ET FORMATAGE MUTUALISÉ DU JSON REÇU
+  try {
+    const rawData = JSON.parse(responseText);
+    // console.log("Le rawData est constitué de :", rawData);
+
+    // ✅ CORRECTION 2 : Clôture parfaite de l'intégration template string et de la boucle map
+    const htmlSermon = `
           <div class="space-y-6">
             ${detailsLecturesHtml}
 
@@ -219,17 +221,17 @@ export async function preachBibleText(userBibleText, pericopeData) {
           </div>
         `;
 
-        return {
-            success: true,
-            html: htmlSermon,
-            motsCles: rawData.mots_cles_originaux || [],
-            genre_litteraire: rawData.genre_litteraire || "Homilétique / Prédication",
-            interrelations_textes: rawData.interrelations_textes,
-            type_predication: rawData.type_predication
-        };
+    return {
+      success: true,
+      html: htmlSermon,
+      motsCles: rawData.mots_cles_originaux || [],
+      genre_litteraire: rawData.genre_litteraire || "Homilétique / Prédication",
+      interrelations_textes: rawData.interrelations_textes,
+      type_predication: rawData.type_predication
+    };
 
-    } catch (error) {
-        console.error("❌ Erreur lors de l'analyse du JSON dans preacher.js :", error);
-        throw error;
-    }
+  } catch (error) {
+    console.error("❌ Erreur lors de l'analyse du JSON dans preacher.js :", error);
+    throw error;
+  }
 }
