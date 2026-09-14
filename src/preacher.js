@@ -68,13 +68,14 @@ export async function preachBibleText(userBibleText, pericopeData) {
     temperature: 0.2,
     responseMimeType: "application/json",
     
-     // ✅ FIX SYNTAXE DU SDK @google/genai : La configuration de sécurité doit être un OBJET direct, pas un tableau
-     safetySettings: {
-      HATE_SPEECH: "BLOCK_NONE",
-      HARASSMENT: "BLOCK_NONE",
-      SEXUALLY_EXPLICIT: "BLOCK_NONE",
-      DANGEROUS_CONTENT: "BLOCK_NONE"
-  },
+     // ✅ SYNTAXE CORRECTE POUR LE NOUVEAU SDK @google/genai : 
+    // On configure la sécurité de manière globale et allégée pour éviter tout crash de paramètre
+    safety_settings: [
+      { category: "HATE_SPEECH", threshold: "OFF" },
+      { category: "HARASSMENT", threshold: "OFF" },
+      { category: "SEXUALLY_EXPLICIT", threshold: "OFF" },
+      { category: "DANGEROUS_CONTENT", threshold: "OFF" }
+  ],
   
     responseSchema: {
         type: "object",
@@ -116,14 +117,7 @@ export async function preachBibleText(userBibleText, pericopeData) {
     systemInstruction: `Tu es un professeur d'homilétique expert de la tradition liturgique ecclésiale et de la contextualisation malgache.
         Tu reçois un texte à prêcher ainsi que les autres lectures de sa péricope.
         Ton rôle est de rédiger le sermon pour le texte biblique selon son genre littéraire propre, et le type de prédication luthérienne convenable.
-        Ne bloque pas tes réponses face aux termes bibliques complexes.
-        
-        Tu dois :
-        1. Expliquer brièvement les interrelations théologiques et logiques entre ces différents textes.
-           Voici le texte ciblé par l'utilisateur : "${userBibleText}", et le contexte extrait de MongoDB : ${contextePericopePrompt}.
-        2. Dégager un thème principal unifié pour la prédication.
-        3. Dégager sous forme de tableau ("mots_cles_originaux") les concepts fondamentaux du texte en français qui découlent des mots-clés originaux (hébreu ou grec) et qui guident le thème.
-        4. Développer les points principaux du sermon avec des explications claires et contextuelles selon les mots clés dégagés.`
+        Génère une exégèse théologique universitaire standard, ne bloque jamais tes réponses face aux termes bibliques complexes.`
 };
 
   // En haut de votre src/preacher.js, remplacez la gestion de l'appel par :
