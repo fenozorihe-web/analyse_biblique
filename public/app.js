@@ -152,7 +152,7 @@ function setupProverbFormListener() {
                 proverbe_malagasy: document.getElementById("proverbe_malagasy").value.trim(),
                 traduction_francaise: document.getElementById("traduction_francaise").value.trim(),
                 concepts_cles: cleanedConcepts,
-                explication_cultureelle: document.getElementById("explication_culturelle").value.trim() // S'adapte à votre index.js actuel
+                explication_culturelle: document.getElementById("explication_culturelle").value.trim() // S'adapte à votre index.js actuel
             };
 
             if (proverbLoader) proverbLoader.classList.remove("hidden");
