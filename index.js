@@ -178,9 +178,11 @@ app.post('/api/ajoutPericope', async (req, res) => {
 // 2. Ajoutez cette nouvelle route POST juste en dessous de votre route /api/ajoutPericope
 app.post('/api/ajoutProverbe', async (req, res) => {
   try {
-    const { proverbe_malagasy, traduction_francaise, concepts_cles, explication_cultureelle } = req.body;
+    const { proverbe_malagasy, traduction_francaise, concepts_cles, explication_culturelle } = req.body;
 
-    if (!proverbe_malagasy || !traduction_francaise || !concepts_cles || !explication_cultureelle) {
+    console.log("Les elements postés de frontend sont:proverbe_malagasy:", proverbe_malagasy, "traduction_francaise:", traduction_francaise, "concepts_cles:", concepts_cles, " et l'explication_culturelle:",  explication_culturelle);
+
+    if (!proverbe_malagasy || !traduction_francaise || !concepts_cles || !explication_culturelle) {
       return res.status(400).json({ success: false, message: "Tous les champs d'étude du Ohabolana sont obligatoires." });
     }
 
@@ -189,7 +191,7 @@ app.post('/api/ajoutProverbe', async (req, res) => {
       proverbe_malagasy,
       traduction_francaise,
       concepts_cles,
-      explication_cultureelle
+      explication_culturelle
     });
 
     return res.status(200).json(result);

@@ -154,6 +154,8 @@ function setupProverbFormListener() {
                 concepts_cles: cleanedConcepts,
                 explication_culturelle: document.getElementById("explication_culturelle").value.trim() // S'adapte à votre index.js actuel
             };
+            
+            console.log("Le payload to be sent to bacend is:",  payload);
 
             if (proverbLoader) proverbLoader.classList.remove("hidden");
             if (btnSubmitProverb) {
