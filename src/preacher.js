@@ -65,50 +65,70 @@ export async function preachBibleText(userBibleText, pericopeData) {
   }
 
   const requestConfig = {
-    temperature: 0.2, // Rigueur académique
+    temperature: 0.2,
     responseMimeType: "application/json",
+    
+    // ✅ CORRECTIF DE SÉCURITÉ : Désactive la modération automatique pour les textes bibliques
+    safetySettings: [
+        {
+            category: "HATE_SPEECH",
+            threshold: "BLOCK_NONE"
+        },
+        {
+            category: "HARASSMENT",
+            threshold: "BLOCK_NONE"
+        },
+        {
+            category: "SEXUALLY_EXPLICIT",
+            threshold: "BLOCK_NONE"
+        },
+        {
+            category: "DANGEROUS_CONTENT",
+            threshold: "BLOCK_NONE"
+        }
+    ],
+    
     responseSchema: {
-      type: "object",
-      properties: {
-        genre_litteraire: { type: "string" },
-        interrelations_textes: { type: "string" },
-        type_predication: { type: "string" },
-        theme_principal: { type: "string" },
-        // ✅ CORRECTION 1 : Changement du type string vers ARRAY pour être compatible avec les fonctions de recherche MongoDB
-        mots_cles_originaux: {
-          type: "array",
-          items: { type: "string" },
-          description: "Tableau de 3 à 5 mots-clés conceptuels extraits en français (ex: ['repentance', 'amour']) correspondants au sens des mots originaux (hébreu/grec) pour chercher des Ohabolana."
-        },
-        introduction: { type: "string" },
-        points_principaux: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              titre: { type: "string" },
-              explication: { type: "string" },
-              messages: { type: "string" }
+        type: "object",
+        properties: {
+            genre_litteraire: { type: "string" },
+            interrelations_textes: { type: "string" },
+            type_predication: { type: "string" },
+            theme_principal: { type: "string" },
+            mots_cles_originaux: {
+                type: "array",
+                items: { type: "string" }
             },
-            required: ["titre", "explication", "messages"]
-          }
+            introduction: { type: "string" },
+            points_principaux: {
+                type: "array",
+                items: {
+                    type: "object",
+                    properties: {
+                        titre: { type: "string" },
+                        explication: { type: "string" },
+                        messages: { type: "string" }
+                    },
+                    required: ["titre", "explication", "messages"]
+                }
+            },
+            conclusion: { type: "string" }
         },
-        conclusion: { type: "string" }
-      },
-      required: [
-        "genre_litteraire",
-        "interrelations_textes",
-        "type_predication",
-        "theme_principal",
-        "mots_cles_originaux",
-        "introduction",
-        "points_principaux",
-        "conclusion"
-      ]
+        required: [
+            "genre_litteraire",
+            "interrelations_textes",
+            "type_predication",
+            "theme_principal",
+            "mots_cles_originaux",
+            "introduction",
+            "points_principaux",
+            "conclusion"
+        ]
     },
     systemInstruction: `Tu es un professeur d'homilétique expert de la tradition liturgique ecclésiale et de la contextualisation malgache.
         Tu reçois un texte à prêcher ainsi que les autres lectures de sa péricope.
         Ton rôle est de rédiger le sermon pour le texte biblique selon son genre littéraire propre, et le type de prédication luthérienne convenable.
+        Ne bloque pas tes réponses face aux termes bibliques complexes.
         
         Tu dois :
         1. Expliquer brièvement les interrelations théologiques et logiques entre ces différents textes.
@@ -116,7 +136,7 @@ export async function preachBibleText(userBibleText, pericopeData) {
         2. Dégager un thème principal unifié pour la prédication.
         3. Dégager sous forme de tableau ("mots_cles_originaux") les concepts fondamentaux du texte en français qui découlent des mots-clés originaux (hébreu ou grec) et qui guident le thème.
         4. Développer les points principaux du sermon avec des explications claires et contextuelles selon les mots clés dégagés.`
-  };
+};
 
   // En haut de votre src/preacher.js, remplacez la gestion de l'appel par :
   const API_KEYS = [
