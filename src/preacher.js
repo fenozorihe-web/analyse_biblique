@@ -68,26 +68,14 @@ export async function preachBibleText(userBibleText, pericopeData) {
     temperature: 0.2,
     responseMimeType: "application/json",
     
-    // ✅ CORRECTIF DE SÉCURITÉ : Désactive la modération automatique pour les textes bibliques
-    safetySettings: [
-        {
-            category: "HATE_SPEECH",
-            threshold: "BLOCK_NONE"
-        },
-        {
-            category: "HARASSMENT",
-            threshold: "BLOCK_NONE"
-        },
-        {
-            category: "SEXUALLY_EXPLICIT",
-            threshold: "BLOCK_NONE"
-        },
-        {
-            category: "DANGEROUS_CONTENT",
-            threshold: "BLOCK_NONE"
-        }
-    ],
-    
+     // ✅ FIX SYNTAXE DU SDK @google/genai : La configuration de sécurité doit être un OBJET direct, pas un tableau
+     safetySettings: {
+      HATE_SPEECH: "BLOCK_NONE",
+      HARASSMENT: "BLOCK_NONE",
+      SEXUALLY_EXPLICIT: "BLOCK_NONE",
+      DANGEROUS_CONTENT: "BLOCK_NONE"
+  },
+  
     responseSchema: {
         type: "object",
         properties: {
