@@ -25,7 +25,6 @@ export async function arrangeBibleText(userBibleText) {
             properties: {
                 reference_identifiee: { type: "string" },
                 mots_cles_theologiques: { type: "array", items: { type: "string" } },
-                // Structure interlinéaire unifiée par verset
                 versets: {
                     type: "array",
                     items: {
@@ -36,19 +35,18 @@ export async function arrangeBibleText(userBibleText) {
                             texte_darby: { type: "string" },
                             texte_kjv: { type: "string" },
                             texte_esv: { type: "string" },
-                            // Le texte Louis Segond éclaté mot par mot pour le survol interactif
                             mots_louis_segond: {
                                 type: "array",
                                 items: {
                                     type: "object",
                                     properties: {
-                                        mot_francais: { type: "string", description: "Le mot en français (ex: 'aimeras')" },
-                                        mot_original: { type: "string", description: "Le mot hébreu ou grec correspondant." },
+                                        mot_francais: { type: "string" },
+                                        mot_original: { type: "string" },
                                         translitteration: { type: "string" },
-                                        lemme_strong: { type: "string" },
-                                        analyse_syntaxique: { type: "string" },
-                                        sens_litteral: { type: "string" },
-                                        impact_syntaxique_theologique: { type: "string" }
+                                        lemme_strong: { type: "string", description: "Le lemme racine et son numéro Strong (ex: G3056 / H7225)." },
+                                        analyse_syntaxique: { type: "string", description: "Morphologie concise (ex: Verbe Aoriste Actif 3s)." },
+                                        sens_litteral: { type: "string", description: "Définition brute en français." },
+                                        impact_syntaxique_theologique: { type: "string", description: "Explication de la portée théologique du mot ou du temps verbal." }
                                     },
                                     required: ["mot_francais", "mot_original", "translitteration", "lemme_strong", "analyse_syntaxique", "sens_litteral", "impact_syntaxique_theologique"]
                                 }
@@ -60,9 +58,8 @@ export async function arrangeBibleText(userBibleText) {
             },
             required: ["reference_identifiee", "mots_cles_theologiques", "versets"]
         },
-        systemInstruction: `Tu es un expert en langues bibliques et en analyse interlinéaire.
-        Tu prends le passage biblique demandé et tu le découpes par numéro de verset.
-        Pour la version Louis Segond, tu dois obligatoirement éclater la phrase mot par mot dans le tableau 'mots_louis_segond'. Pour chaque mot français, associe-lui son mot original exact en hébreu ou grec, sa translittération, sa grammaire et son impact théologique.`
+        systemInstruction: `Tu es un expert en langues bibliques. Découpe le passage par numéro de verset. 
+        Pour chaque mot français de Louis Segond, associe son équivalent hébreu/grec dans 'mots_louis_segond'. Sois très précis mais concis dans tes réponses pour préserver la taille du JSON.`
     };
 
     const MODELES_A_TESTER = ["gemini-2.5-flash", "gemini-3.1-pro-preview"];
@@ -73,18 +70,18 @@ export async function arrangeBibleText(userBibleText) {
         for (let i = 0; i < API_KEYS.length; i++) {
             if (successGeneration) break;
             try {
-                console.log(`🤖 [Interlinéaire Fusionné] Modèle [${modelName}] Clé n°${i + 1}...`);
+                console.log(`🤖 [Interlinéaire Précis] Modèle [${modelName}] Clé n°${i + 1}...`);
                 const ai = new GoogleGenAI({ apiKey: API_KEYS[i] });
                 const response = await ai.models.generateContent({
                     model: modelName,
-                    contents: `Génère l'exégèse interlinéaire par verset pour : "${userBibleText}"`,
+                    contents: `Génère l'exégèse pas à pas pour : "${userBibleText}"`,
                     config: requestConfig
                 });
                 responseText = response.text;
                 successGeneration = true;
                 break;
             } catch (err) {
-                console.warn(`⚠️ Échec modèle [${modelName}] Clé n°${i + 1}`);
+                console.warn(`⚠️ Échec modèle [${modelName}] Clé n°${i + 1}.`);
             }
         }
     }

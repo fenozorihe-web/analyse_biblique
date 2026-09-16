@@ -378,9 +378,8 @@ if (btnSubmitAction && actionSelect) {
                     const fluidInteractiveText = document.getElementById("fluidInteractiveText");
                     const floatingTooltip = document.getElementById("floatingTooltip");
             
-                    // 1. Injection des autres versions par paragraphes avec numéros de versets
+                    // Injection des versions comparées (MG, DB, KJV, ESV)
                     let htmlMg = "", htmlDb = "", htmlKjv = "", htmlEsv = "";
-                    
                     bData.versets.forEach(v => {
                         htmlMg += `<span class="text-blue-600 font-bold mr-1">${v.numero_verset}</span>${v.texte_malgache} `;
                         htmlDb += `<span class="text-purple-600 font-bold mr-1">${v.numero_verset}</span>${v.texte_darby} `;
@@ -393,7 +392,7 @@ if (btnSubmitAction && actionSelect) {
                     document.getElementById("ver_kjv").innerHTML = htmlKjv;
                     document.getElementById("ver_esv").innerHTML = htmlEsv;
             
-                    // 2. Gestion des Onglets de Langues
+                    // Configuration des onglets
                     const tabs = { mg: document.getElementById('tab_mg'), db: document.getElementById('tab_db'), en: document.getElementById('tab_en') };
                     const panels = { mg: document.getElementById('panel_mg'), db: document.getElementById('panel_db'), en: document.getElementById('panel_en') };
                     Object.keys(tabs).forEach(k => {
@@ -406,77 +405,68 @@ if (btnSubmitAction && actionSelect) {
                         }
                     });
             
-                    // 3. Construction du texte fluide Louis Segond (Mots interactifs)
+                    // Rendu du texte fluide interactif
                     if (fluidInteractiveText && bData.versets) {
                         fluidInteractiveText.innerHTML = "";
             
                         bData.versets.forEach((verset) => {
-                            // Création de la balise du numéro de verset
                             const vNum = document.createElement("span");
                             vNum.className = "text-xs font-extrabold text-blue-600 bg-blue-50 border border-blue-200/60 px-1.5 py-0.5 rounded-md mr-1.5 align-middle select-none";
                             vNum.textContent = verset.numero_verset;
                             fluidInteractiveText.appendChild(vNum);
             
-                            // Injection de chaque mot sous forme de span sensible à la souris
                             verset.mots_louis_segond.forEach((item) => {
                                 const spanMot = document.createElement("span");
                                 spanMot.className = "inline-block px-0.5 hover:text-blue-600 hover:bg-blue-50 rounded-sm transition cursor-help font-medium mr-1";
                                 spanMot.textContent = item.mot_francais;
             
-                                // 🛸 A. EFFET : Entrée de la souris (Affiche et configure la mini-modale)
+                                // 🛸 A. EFFET AU SURVOL (MOUSEENTER) : Seuls le mot original et le strong s'affichent
                                 spanMot.addEventListener("mouseenter", () => {
                                     floatingTooltip.innerHTML = `
                                         <div class="border-b border-slate-700 pb-1">
-                                            <span class="text-[10px] uppercase font-bold text-blue-400">Mot Original</span>
+                                            <span class="text-[10px] uppercase font-bold text-blue-400">Terme Original</span>
                                             <p class="text-xl font-serif font-bold text-white">${item.mot_original} <span class="text-xs font-sans font-normal text-slate-400">(${item.translitteration})</span></p>
                                         </div>
-                                        <div>
-                                            <span class="text-[10px] uppercase font-bold text-emerald-400">Sens Littéral</span>
-                                            <p class="font-sans text-slate-200 mt-0.5 font-medium">« ${item.sens_litteral} »</p>
-                                        </div>
-                                        <div class="bg-slate-900 p-1.5 rounded-lg border border-slate-800 text-[11px] font-mono text-amber-300">
-                                            ${item.analyse_syntaxique}
+                                        <div class="pt-1.5 text-[11px] font-mono text-amber-400">
+                                            🔑 Code Strong : <span class="bg-slate-900 px-1.5 py-0.5 rounded text-white border border-slate-800">${item.lemme_strong}</span>
                                         </div>
                                     `;
                                     floatingTooltip.classList.remove("hidden");
                                 });
             
-                                // 🛸 B. EFFET : Déplacement de la souris (La mini-modale suit le pointeur de façon fluide)
                                 spanMot.addEventListener("mousemove", (e) => {
-                                    // Positionne la mini-modale à 15px en bas à droite de la pointe de la souris
                                     floatingTooltip.style.left = `${e.pageX + 15}px`;
                                     floatingTooltip.style.top = `${e.pageY + 15}px`;
                                 });
             
-                                // 🛸 C. EFFET : Sortie de la souris (Masque la mini-modale)
                                 spanMot.addEventListener("mouseleave", () => {
                                     floatingTooltip.classList.add("hidden");
                                 });
             
-                                // ⚡ D. CLIC : Verrouille et affiche l'analyse théologique complète dans le panneau de droite
+                                // ⚡ B. EFFET AU CLIC : Affiche l'analyse syntaxique complète, le sens littéral et l'impact théologique à droite
                                 spanMot.addEventListener("click", () => {
                                     fluidInteractiveText.querySelectorAll("span").forEach(s => s.classList.remove("text-blue-700", "bg-blue-100", "font-bold"));
                                     spanMot.classList.add("text-blue-700", "bg-blue-100", "font-bold");
             
                                     const panel = document.getElementById("syntaxDetailsPanel");
                                     if (panel) {
-                                        panel.className = "space-y-4 flex-1 text-left not-italic text-sm text-slate-200 animate-fadeIn";
+                                        panel.className = "space-y-4 flex-1 text-left not-italic text-sm text-slate-200 overflow-y-auto max-h-[60vh] pr-1 silverware-scroll animate-fadeIn";
                                         panel.innerHTML = `
                                             <div>
-                                                <span class="text-xs uppercase tracking-widest text-blue-400 font-bold">Terme Lexical</span>
+                                                <span class="text-xs uppercase tracking-widest text-blue-400 font-bold">Terme Lexical Sélectionné</span>
                                                 <p class="text-3xl font-serif font-bold text-white mt-1">${item.mot_original} <span class="text-xs font-sans font-normal text-slate-400">(${item.translitteration})</span></p>
                                             </div>
                                             <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 text-xs">
-                                                <span class="text-xs uppercase font-bold text-amber-400 block mb-0.5">Morphologie & Syntaxe</span>
+                                                <span class="text-xs uppercase font-bold text-amber-400 block mb-0.5">Analyse Morphologique & Syntaxique</span>
                                                 <p class="font-mono text-slate-100 leading-relaxed">${item.analyse_syntaxique}</p>
                                             </div>
                                             <div>
-                                                <span class="text-xs uppercase font-bold text-emerald-400">Sens & Racine Strong</span>
+                                                <span class="text-xs uppercase font-bold text-emerald-400">Sens Littéral & Racine</span>
                                                 <p class="text-sm font-semibold text-white mt-0.5">« ${item.sens_litteral} » <span class="bg-slate-700 px-1.5 py-0.5 rounded text-slate-300 font-mono text-xs">${item.lemme_strong}</span></p>
                                             </div>
                                             <div class="pt-2 border-t border-slate-700/60">
-                                                <span class="text-xs uppercase font-bold text-indigo-400 block mb-1">🎯 Portée et Choix du Temps Verbal</span>
-                                                <p class="text-xs text-slate-300 leading-relaxed bg-slate-900/40 p-2.5 rounded-xl border border-slate-800">${item.impact_syntaxique_theologique}</p>
+                                                <span class="text-xs uppercase font-bold text-indigo-400 block mb-1">🎯 Impact et Portée Théologique</span>
+                                                <p class="text-xs text-slate-300 leading-relaxed bg-slate-900/40 p-3 rounded-xl border border-slate-800">${item.impact_syntaxique_theologique}</p>
                                             </div>
                                         `;
                                     }
