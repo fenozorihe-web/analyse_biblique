@@ -10,6 +10,7 @@ import { analyzeBibleText } from "./src/analyzer.js";
 import { findMatchingProverbs, findPericopeByText, insertProverb } from "./src/searchEngine.js";
 
 import { preachBibleText } from "./src/preacher.js";
+import { arrangeBibleText } from "./src/arranger.js";
 
 // ✅ NOUVEAUX IMPORTS POUR LA PERICOPE
 import { insertPericope } from "./src/ajoutPericope.js";
