@@ -5,7 +5,7 @@ import { getAjoutProverbTemplate } from "./models/ajoutProv.js";
 
 // ✅ NOUVEL IMPORT ÉPURÉ
 import { initBibleCalendar } from "./models/bibleSelector.js"; 
-import { getInterlinearResultTemplate } from "./modules/resultTemplates.js";
+import { getInterlinearResultTemplate } from "./models/resultTemplates.js";
 
 // Sélection des éléments de l'interface globale
 const bibleTextInput = document.getElementById('bibleText');
