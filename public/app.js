@@ -434,6 +434,10 @@ if (btnSubmitAction && actionSelect) {
             
                     // Rendre visible l'interface d'agencement/interlinéaire
                     if (arrangementBlock) arrangementBlock.classList.remove('hidden');
+                    if (resultSection) {
+                        resultSection.classList.remove('hidden');
+                        resultSection.scrollIntoView({ behavior: 'smooth' });
+                    }
                 }            
                 else {
                     alert("Résultats reçus pour une action non gérée graphiquement.");
