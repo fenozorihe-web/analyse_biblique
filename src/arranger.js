@@ -10,13 +10,9 @@ const API_KEYS = [
     process.env.GEMINI_API_KEY_3
 ].filter(key => key !== undefined && key !== "");
 
-/**
- * Génère les versions bibliques et l'analyse interlinéaire mot par mot
- * @param {string} userBibleText - La référence ou le texte brut fourni par l'utilisateur
- */
 export async function arrangeBibleText(userBibleText) {
     const requestConfig = {
-        temperature: 0.1, // Basse température pour une précision linguistique absolue
+        temperature: 0.1,
         responseMimeType: "application/json",
         safety_settings: [
             { category: "HATE_SPEECH", threshold: "OFF" },
@@ -31,40 +27,46 @@ export async function arrangeBibleText(userBibleText) {
                 versions: {
                     type: "object",
                     properties: {
-                        originale: { type: "string", description: "Le texte complet en Hébreu (Ancien Testament) ou Grec (Nouveau Testament) avec ponctuations." },
+                        originale: { type: "string" },
                         malgache_protestante: { type: "string" },
                         louis_segond: { type: "string" },
-                        darby: { type: "string" }
+                        darby: { type: "string" },
+                        kjv: { type: "string", description: "King James Version" },
+                        esv: { type: "string", description: "English Standard Version" }
                     },
-                    required: ["originale", "malgache_protestante", "louis_segond", "darby"]
+                    required: ["originale", "malgache_protestante", "louis_segond", "darby", "kjv", "esv"]
                 },
                 mots_cles_theologiques: {
                     type: "array",
-                    items: { type: "string" },
-                    description: "3 mots-clés conceptuels en français pour la recherche de Ohabolana."
+                    items: { type: "string" }
                 },
                 decorticage_interlineaire: {
                     type: "array",
                     items: {
                         type: "object",
                         properties: {
-                            mot_original: { type: "string", description: "Le mot en caractères hébreux ou grecs." },
-                            translitteration: { type: "string", description: "Prononciation phonétique (ex: Logos, Metanoia)." },
-                            lemme_strong: { type: "string", description: "Le mot à sa forme racine avec numéro Strong si disponible." },
-                            analyse_syntaxique: { type: "string", description: "Nature grammaticale précise (ex: Verbe, Aoriste Actif, 3ème pers. singulier / Nom, Masculin Singulier Datif)." },
-                            sens_litteral: { type: "string", description: "Définition et traduction brute en français." }
+                            mot_original: { type: "string" },
+                            translitteration: { type: "string" },
+                            lemme_strong: { type: "string" },
+                            analyse_syntaxique: { type: "string" },
+                            sens_litteral: { type: "string" },
+                            // ✅ AJOUT DE L'ANALYSE PAR ETAPE DE SENS GRAMMATICAL ET IMPACT THEOLOGIQUE
+                            impact_syntaxique_theologique: { 
+                                type: "string", 
+                                description: "Explication approfondie en français de l'impact du temps verbal (ex: Aoriste, Parfait), du mode ou de la déclinaison sur le sens théologique précis du verset." 
+                            }
                         },
-                        required: ["mot_original", "translitteration", "lemme_strong", "analyse_syntaxique", "sens_litteral"]
+                        required: ["mot_original", "translitteration", "lemme_strong", "analyse_syntaxique", "sens_litteral", "impact_syntaxique_theologique"]
                     }
                 }
             },
             required: ["reference_identifiee", "versions", "mots_cles_theologiques", "decorticage_interlineaire"]
         },
-        systemInstruction: `Tu es un érudit en langues bibliques (Hébreu biblique, Araméen et Grec Koinè) et expert des traductions protestantes malgaches et françaises.
-        Ton rôle est d'agir comme un moteur de recherche interlinéaire.
-        1. Identifie le texte biblique fourni. S'il s'agit d'un Ancien Testament, utilise l'Hébreu. Si c'est un Nouveau Testament, utilise le Grec Koinè.
-        2. Fournis le texte complet dans les versions demandées (Originale, Malgache Protestante Katolika/Protestanta standard, Louis Segond 1910, Darby).
-        3. Découpe le texte original MOT PAR MOT (dans l'ordre de lecture) et fournis pour chaque mot une analyse syntaxique et grammaticale d'une précision chirurgicale.`
+        systemInstruction: `Tu es un érudit en langues bibliques (Hébreu biblique, Araméen et Grec Koinè) et expert des traductions protestantes internationales (malgaches, françaises, anglaises).
+        Ton rôle est d'agir comme un moteur de recherche interlinéaire complet.
+        1. Identifie le texte biblique. Utilise l'Hébreu pour l'Ancien Testament, le Grec Koinè pour le Nouveau.
+        2. Traduis le verset dans toutes les versions demandées, y compris la King James (KJV) et l'English Standard Version (ESV).
+        3. Découpe le texte original MOT PAR MOT. Pour chaque mot, explique de manière approfondie l'impact de sa morphologie grammaticale (temps verbal, déclinaisons, cas) sur l'interprétation exégétique et doctrinale du passage.`
     };
 
     const MODELES_A_TESTER = ["gemini-2.5-flash", "gemini-3.1-pro-preview"];
@@ -75,11 +77,11 @@ export async function arrangeBibleText(userBibleText) {
         for (let i = 0; i < API_KEYS.length; i++) {
             if (successGeneration) break;
             try {
-                console.log(`🤖 [Interlinéaire] Essai : Modèle [${modelName}] Clé n°${i + 1}...`);
+                console.log(`🤖 [Linguistique Expert] Modèle [${modelName}] Clé n°${i + 1}...`);
                 const ai = new GoogleGenAI({ apiKey: API_KEYS[i] });
                 const response = await ai.models.generateContent({
                     model: modelName,
-                    contents: `Génère les versions et l'analyse mot à mot pour : "${userBibleText}"`,
+                    contents: `Versions et exégèse mot à mot pour : "${userBibleText}"`,
                     config: requestConfig
                 });
                 responseText = response.text;
@@ -94,13 +96,8 @@ export async function arrangeBibleText(userBibleText) {
     if (!successGeneration) throw new Error("Serveurs d'analyse linguistique saturés.");
 
     try {
-        const rawData = JSON.parse(responseText);
-        return {
-            success: true,
-            data: rawData
-        };
+        return { success: true, data: JSON.parse(responseText) };
     } catch (error) {
-        console.error("Erreur JSON interlinéaire :", error);
         throw error;
     }
 }

@@ -371,28 +371,47 @@ if (btnSubmitAction && actionSelect) {
                 else if (selectedAction === "arranger" && data.bibleData) {
                     const bData = data.bibleData;
             
-                    // ✅ INJECTION DYNAMIQUE DU GABARIT DANS L'INDEX
+                    // 1. Injection du gabarit HTML
                     const outputZone = document.getElementById("dynamicInterlinearOutput");
-                    if (outputZone) {
-                        outputZone.innerHTML = getInterlinearResultTemplate();
-                    }
+                    if (outputZone) outputZone.innerHTML = getInterlinearResultTemplate();
             
-                    // Récupération des éléments fraîchement injectés dans le DOM
                     const arrangementBlock = document.getElementById('arrangementBlock');
                     const wordsContainer = document.getElementById("interactiveWordsContainer");
             
-                    // Remplissage des blocs textuels des versions
+                    // 2. Remplissage des versions (MG, FR, EN)
                     document.getElementById("ver_mg").textContent = bData.versions.malgache_protestante;
                     document.getElementById("ver_ls").textContent = bData.versions.louis_segond;
                     document.getElementById("ver_db").textContent = bData.versions.darby;
+                    document.getElementById("ver_kjv").textContent = bData.versions.kjv;
+                    document.getElementById("ver_esv").textContent = bData.versions.esv;
             
-                    // Configuration de la direction de lecture (Hébreu RTL vs Grec LTR)
+                    // 3. Logique d'activation des Onglets de Version au Clic
+                    const setupTabs = () => {
+                        const tabs = { mg: document.getElementById('tab_mg'), fr: document.getElementById('tab_fr'), en: document.getElementById('tab_en') };
+                        const panels = { mg: document.getElementById('panel_mg'), fr: document.getElementById('panel_fr'), en: document.getElementById('panel_en') };
+            
+                        Object.keys(tabs).forEach(key => {
+                            if (tabs[key]) {
+                                tabs[key].addEventListener('click', () => {
+                                    // Réinitialise tous les onglets et panneaux
+                                    Object.keys(tabs).forEach(k => {
+                                        tabs[k].className = "px-3 py-1.5 rounded-lg transition cursor-pointer";
+                                        panels[k].classList.add('hidden');
+                                    });
+                                    // Active l'onglet sélectionné
+                                    tabs[key].className = "px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition cursor-pointer";
+                                    panels[key].classList.remove('hidden');
+                                });
+                            }
+                        });
+                    };
+                    setupTabs();
+            
+                    // 4. Configuration de la direction d'écriture (Hébreu vs Grec)
                     const estAncienTestament = /^[A-Za-zÀ-ÿ]/.test(bData.reference_identifiee) === false;
-                    if (wordsContainer) {
-                        wordsContainer.style.direction = estAncienTestament ? "rtl" : "ltr";
-                    }
+                    if (wordsContainer) wordsContainer.style.direction = estAncienTestament ? "rtl" : "ltr";
             
-                    // Génération et branchement interactif des jetons de mots cliquables
+                    // 5. Génération interactive des boutons de mots originaux
                     if (wordsContainer && bData.decorticage_interlineaire) {
                         bData.decorticage_interlineaire.forEach((item) => {
                             const wordBtn = document.createElement("button");
@@ -409,36 +428,38 @@ if (btnSubmitAction && actionSelect) {
             
                                 const panel = document.getElementById("syntaxDetailsPanel");
                                 if (panel) {
-                                    panel.className = "space-y-4 flex-1 text-left not-italic text-sm text-slate-200 animate-fadeIn";
+                                    panel.className = "space-y-4 flex-1 text-left not-italic text-sm text-slate-200 overflow-y-auto max-h-[60vh] pr-1 animate-fadeIn";
                                     panel.innerHTML = `
                                         <div>
                                             <span class="text-xs uppercase tracking-widest text-blue-400 font-bold">Terme Original</span>
-                                            <p class="text-3xl font-serif font-bold text-white mt-1">${item.mot_original} <span class="text-sm font-sans font-medium text-slate-400">(${item.translitteration})</span></p>
+                                            <p class="text-3xl font-serif font-bold text-white mt-1">${item.mot_original} <span class="text-xs font-sans font-medium text-slate-400">(${item.translitteration})</span></p>
                                         </div>
-                                        <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700">
-                                            <span class="text-xs uppercase font-bold text-amber-400">Analyse de la Grammaire</span>
-                                            <p class="font-mono text-xs text-slate-100 mt-1 leading-relaxed">${item.analyse_syntaxique}</p>
+                                        <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 text-xs">
+                                            <span class="text-xs uppercase font-bold text-amber-400 block mb-0.5">Grammaire & Nature</span>
+                                            <p class="font-mono text-slate-100 leading-relaxed">${item.analyse_syntaxique}</p>
                                         </div>
                                         <div>
-                                            <span class="text-xs uppercase font-bold text-emerald-400">Sens Littéral & Racine (Strong)</span>
-                                            <p class="text-sm font-semibold text-white mt-0.5">« ${item.sens_litteral} »</p>
-                                            <p class="text-xs text-slate-400 font-medium mt-1">Racine lexicale : <span class="bg-slate-700 px-1.5 py-0.5 rounded text-slate-200 font-mono">${item.lemme_strong}</span></p>
+                                            <span class="text-xs uppercase font-bold text-emerald-400">Sens Littéral & Racine</span>
+                                            <p class="text-sm font-semibold text-white mt-0.5">« ${item.sens_litteral} » <span class="bg-slate-700 px-1.5 py-0.5 rounded text-slate-300 font-mono text-xs">${item.lemme_strong}</span></p>
+                                        </div>
+                                        <!-- ✅ NOUVELLE ZONE COMPLEMENTAIRE DE SENS GRAMMATICAL ET D'IMPACT CRUCIAL -->
+                                        <div class="pt-2 border-t border-slate-700/60">
+                                            <span class="text-xs uppercase font-bold text-indigo-400 block mb-1">🎯 Portée et Choix du Temps Verbal</span>
+                                            <p class="text-xs text-slate-300 leading-relaxed bg-slate-900/40 p-2.5 rounded-xl border border-slate-800">${item.impact_syntaxique_theologique}</p>
                                         </div>
                                     `;
                                 }
                             });
-            
                             wordsContainer.appendChild(wordBtn);
                         });
                     }
             
-                    // Rendre visible l'interface d'agencement/interlinéaire
                     if (arrangementBlock) arrangementBlock.classList.remove('hidden');
                     if (resultSection) {
                         resultSection.classList.remove('hidden');
                         resultSection.scrollIntoView({ behavior: 'smooth' });
                     }
-                }            
+                }                       
                 else {
                     alert("Résultats reçus pour une action non gérée graphiquement.");
                 }
