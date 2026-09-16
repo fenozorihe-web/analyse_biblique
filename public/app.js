@@ -5,6 +5,7 @@ import { getAjoutProverbTemplate } from "./models/ajoutProv.js";
 
 // ✅ NOUVEL IMPORT ÉPURÉ
 import { initBibleCalendar } from "./models/bibleSelector.js"; 
+import { getInterlinearResultTemplate } from "./modules/resultTemplates.js";
 
 // Sélection des éléments de l'interface globale
 const bibleTextInput = document.getElementById('bibleText');
@@ -366,7 +367,75 @@ if (btnSubmitAction && actionSelect) {
                 else if (selectedAction === "analyser" || selectedAction === "analyse") {
                     // Appelle votre fonction existante (assurez-vous qu'elle s'appelle bien displayAnalyse ou displayResults)
                         displayAnalyse(data)
-                } else {
+                } 
+                else if (selectedAction === "arranger" && data.bibleData) {
+                    const bData = data.bibleData;
+            
+                    // ✅ INJECTION DYNAMIQUE DU GABARIT DANS L'INDEX
+                    const outputZone = document.getElementById("dynamicInterlinearOutput");
+                    if (outputZone) {
+                        outputZone.innerHTML = getInterlinearResultTemplate();
+                    }
+            
+                    // Récupération des éléments fraîchement injectés dans le DOM
+                    const arrangementBlock = document.getElementById('arrangementBlock');
+                    const wordsContainer = document.getElementById("interactiveWordsContainer");
+            
+                    // Remplissage des blocs textuels des versions
+                    document.getElementById("ver_mg").textContent = bData.versions.malgache_protestante;
+                    document.getElementById("ver_ls").textContent = bData.versions.louis_segond;
+                    document.getElementById("ver_db").textContent = bData.versions.darby;
+            
+                    // Configuration de la direction de lecture (Hébreu RTL vs Grec LTR)
+                    const estAncienTestament = /^[A-Za-zÀ-ÿ]/.test(bData.reference_identifiee) === false;
+                    if (wordsContainer) {
+                        wordsContainer.style.direction = estAncienTestament ? "rtl" : "ltr";
+                    }
+            
+                    // Génération et branchement interactif des jetons de mots cliquables
+                    if (wordsContainer && bData.decorticage_interlineaire) {
+                        bData.decorticage_interlineaire.forEach((item) => {
+                            const wordBtn = document.createElement("button");
+                            wordBtn.type = "button";
+                            wordBtn.className = "px-3 py-2 bg-slate-800 hover:bg-blue-600 text-white rounded-xl border border-slate-700 text-base md:text-lg font-serif font-bold transition flex flex-col items-center gap-0.5 cursor-pointer shadow-sm";
+                            wordBtn.innerHTML = `
+                                <span class="text-white">${item.mot_original}</span>
+                                <span class="text-[10px] text-blue-300 font-sans font-normal normal-case">${item.translitteration}</span>
+                            `;
+            
+                            wordBtn.addEventListener("click", () => {
+                                wordsContainer.querySelectorAll("button").forEach(b => b.classList.remove("bg-blue-600", "border-blue-400"));
+                                wordBtn.classList.add("bg-blue-600", "border-blue-400");
+            
+                                const panel = document.getElementById("syntaxDetailsPanel");
+                                if (panel) {
+                                    panel.className = "space-y-4 flex-1 text-left not-italic text-sm text-slate-200 animate-fadeIn";
+                                    panel.innerHTML = `
+                                        <div>
+                                            <span class="text-xs uppercase tracking-widest text-blue-400 font-bold">Terme Original</span>
+                                            <p class="text-3xl font-serif font-bold text-white mt-1">${item.mot_original} <span class="text-sm font-sans font-medium text-slate-400">(${item.translitteration})</span></p>
+                                        </div>
+                                        <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700">
+                                            <span class="text-xs uppercase font-bold text-amber-400">Analyse de la Grammaire</span>
+                                            <p class="font-mono text-xs text-slate-100 mt-1 leading-relaxed">${item.analyse_syntaxique}</p>
+                                        </div>
+                                        <div>
+                                            <span class="text-xs uppercase font-bold text-emerald-400">Sens Littéral & Racine (Strong)</span>
+                                            <p class="text-sm font-semibold text-white mt-0.5">« ${item.sens_litteral} »</p>
+                                            <p class="text-xs text-slate-400 font-medium mt-1">Racine lexicale : <span class="bg-slate-700 px-1.5 py-0.5 rounded text-slate-200 font-mono">${item.lemme_strong}</span></p>
+                                        </div>
+                                    `;
+                                }
+                            });
+            
+                            wordsContainer.appendChild(wordBtn);
+                        });
+                    }
+            
+                    // Rendre visible l'interface d'agencement/interlinéaire
+                    if (arrangementBlock) arrangementBlock.classList.remove('hidden');
+                }            
+                else {
                     alert("Résultats reçus pour une action non gérée graphiquement.");
                 }
             } else {

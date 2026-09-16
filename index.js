@@ -232,6 +232,33 @@ app.post('/api/analyseProverbe', async (req, res) => {
   }
 });
 
+app.post('/api/arrangement', async (req, res) => {
+  try {
+    const { userBibleText, actionRequested } = req.body;
+    if (!userBibleText || userBibleText.trim() === "") {
+      return res.status(400).json({ success: false, message: "Le texte biblique est requis." });
+    }
+
+    console.log(`📚 Requête d'Analyse Interlinéaire pour : "${userBibleText.substring(0, 30)}..."`);
+    const interlinearResult = await arrangeBibleText(userBibleText);
+
+    // Recherche des proverbes malgaches basés sur les mots clés théologiques de l'analyse
+    const conceptsToSearch = interlinearResult.data.mots_cles_theologiques || [];
+    const matchedProverbs = await findMatchingProverbs(conceptsToSearch);
+
+    return res.status(200).json({
+      success: true,
+      action: actionRequested,
+      bibleData: interlinearResult.data, // Transmet l'objet brut structuré au front
+      illustrations_malgaches: matchedProverbs
+    });
+
+  } catch (error) {
+    console.error("❌ Erreur sur la route interlinéaire :", error);
+    return res.status(500).json({ success: false, message: "Erreur lors du décorticage des langues originales." });
+  }
+});
+
 // === DEMARRAGE DU SERVEUR ===
 app.listen(PORT, () => {
   console.log(`🚀 Serveur actif sur http://localhost:${PORT}`);
