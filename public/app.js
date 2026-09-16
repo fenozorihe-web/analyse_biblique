@@ -371,86 +371,119 @@ if (btnSubmitAction && actionSelect) {
                 else if (selectedAction === "arranger" && data.bibleData) {
                     const bData = data.bibleData;
             
-                    // 1. Injection du gabarit HTML
                     const outputZone = document.getElementById("dynamicInterlinearOutput");
                     if (outputZone) outputZone.innerHTML = getInterlinearResultTemplate();
             
                     const arrangementBlock = document.getElementById('arrangementBlock');
-                    const wordsContainer = document.getElementById("interactiveWordsContainer");
+                    const fluidInteractiveText = document.getElementById("fluidInteractiveText");
+                    const floatingTooltip = document.getElementById("floatingTooltip");
             
-                    // 2. Remplissage des versions (MG, FR, EN)
-                    document.getElementById("ver_mg").textContent = bData.versions.malgache_protestante;
-                    document.getElementById("ver_ls").textContent = bData.versions.louis_segond;
-                    document.getElementById("ver_db").textContent = bData.versions.darby;
-                    document.getElementById("ver_kjv").textContent = bData.versions.kjv;
-                    document.getElementById("ver_esv").textContent = bData.versions.esv;
+                    // 1. Injection des autres versions par paragraphes avec numéros de versets
+                    let htmlMg = "", htmlDb = "", htmlKjv = "", htmlEsv = "";
+                    
+                    bData.versets.forEach(v => {
+                        htmlMg += `<span class="text-blue-600 font-bold mr-1">${v.numero_verset}</span>${v.texte_malgache} `;
+                        htmlDb += `<span class="text-purple-600 font-bold mr-1">${v.numero_verset}</span>${v.texte_darby} `;
+                        htmlKjv += `<span class="text-amber-600 font-bold mr-1">${v.numero_verset}</span>${v.texte_kjv} `;
+                        htmlEsv += `<span class="text-indigo-600 font-bold mr-1">${v.numero_verset}</span>${v.texte_esv} `;
+                    });
             
-                    // 3. Logique d'activation des Onglets de Version au Clic
-                    const setupTabs = () => {
-                        const tabs = { mg: document.getElementById('tab_mg'), fr: document.getElementById('tab_fr'), en: document.getElementById('tab_en') };
-                        const panels = { mg: document.getElementById('panel_mg'), fr: document.getElementById('panel_fr'), en: document.getElementById('panel_en') };
+                    document.getElementById("panel_mg").innerHTML = htmlMg;
+                    document.getElementById("panel_db").innerHTML = htmlDb;
+                    document.getElementById("ver_kjv").innerHTML = htmlKjv;
+                    document.getElementById("ver_esv").innerHTML = htmlEsv;
             
-                        Object.keys(tabs).forEach(key => {
-                            if (tabs[key]) {
-                                tabs[key].addEventListener('click', () => {
-                                    // Réinitialise tous les onglets et panneaux
-                                    Object.keys(tabs).forEach(k => {
-                                        tabs[k].className = "px-3 py-1.5 rounded-lg transition cursor-pointer";
-                                        panels[k].classList.add('hidden');
-                                    });
-                                    // Active l'onglet sélectionné
-                                    tabs[key].className = "px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition cursor-pointer";
-                                    panels[key].classList.remove('hidden');
-                                });
-                            }
-                        });
-                    };
-                    setupTabs();
+                    // 2. Gestion des Onglets de Langues
+                    const tabs = { mg: document.getElementById('tab_mg'), db: document.getElementById('tab_db'), en: document.getElementById('tab_en') };
+                    const panels = { mg: document.getElementById('panel_mg'), db: document.getElementById('panel_db'), en: document.getElementById('panel_en') };
+                    Object.keys(tabs).forEach(k => {
+                        if (tabs[k]) {
+                            tabs[k].addEventListener('click', () => {
+                                Object.keys(tabs).forEach(x => { tabs[x].className = "px-3 py-1.5 rounded-lg transition cursor-pointer"; panels[x].classList.add('hidden'); });
+                                tabs[k].className = "px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition cursor-pointer";
+                                panels[k].classList.remove('hidden');
+                            });
+                        }
+                    });
             
-                    // 4. Configuration de la direction d'écriture (Hébreu vs Grec)
-                    const estAncienTestament = /^[A-Za-zÀ-ÿ]/.test(bData.reference_identifiee) === false;
-                    if (wordsContainer) wordsContainer.style.direction = estAncienTestament ? "rtl" : "ltr";
+                    // 3. Construction du texte fluide Louis Segond (Mots interactifs)
+                    if (fluidInteractiveText && bData.versets) {
+                        fluidInteractiveText.innerHTML = "";
             
-                    // 5. Génération interactive des boutons de mots originaux
-                    if (wordsContainer && bData.decorticage_interlineaire) {
-                        bData.decorticage_interlineaire.forEach((item) => {
-                            const wordBtn = document.createElement("button");
-                            wordBtn.type = "button";
-                            wordBtn.className = "px-3 py-2 bg-slate-800 hover:bg-blue-600 text-white rounded-xl border border-slate-700 text-base md:text-lg font-serif font-bold transition flex flex-col items-center gap-0.5 cursor-pointer shadow-sm";
-                            wordBtn.innerHTML = `
-                                <span class="text-white">${item.mot_original}</span>
-                                <span class="text-[10px] text-blue-300 font-sans font-normal normal-case">${item.translitteration}</span>
-                            `;
+                        bData.versets.forEach((verset) => {
+                            // Création de la balise du numéro de verset
+                            const vNum = document.createElement("span");
+                            vNum.className = "text-xs font-extrabold text-blue-600 bg-blue-50 border border-blue-200/60 px-1.5 py-0.5 rounded-md mr-1.5 align-middle select-none";
+                            vNum.textContent = verset.numero_verset;
+                            fluidInteractiveText.appendChild(vNum);
             
-                            wordBtn.addEventListener("click", () => {
-                                wordsContainer.querySelectorAll("button").forEach(b => b.classList.remove("bg-blue-600", "border-blue-400"));
-                                wordBtn.classList.add("bg-blue-600", "border-blue-400");
+                            // Injection de chaque mot sous forme de span sensible à la souris
+                            verset.mots_louis_segond.forEach((item) => {
+                                const spanMot = document.createElement("span");
+                                spanMot.className = "inline-block px-0.5 hover:text-blue-600 hover:bg-blue-50 rounded-sm transition cursor-help font-medium mr-1";
+                                spanMot.textContent = item.mot_francais;
             
-                                const panel = document.getElementById("syntaxDetailsPanel");
-                                if (panel) {
-                                    panel.className = "space-y-4 flex-1 text-left not-italic text-sm text-slate-200 overflow-y-auto max-h-[60vh] pr-1 animate-fadeIn";
-                                    panel.innerHTML = `
-                                        <div>
-                                            <span class="text-xs uppercase tracking-widest text-blue-400 font-bold">Terme Original</span>
-                                            <p class="text-3xl font-serif font-bold text-white mt-1">${item.mot_original} <span class="text-xs font-sans font-medium text-slate-400">(${item.translitteration})</span></p>
-                                        </div>
-                                        <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 text-xs">
-                                            <span class="text-xs uppercase font-bold text-amber-400 block mb-0.5">Grammaire & Nature</span>
-                                            <p class="font-mono text-slate-100 leading-relaxed">${item.analyse_syntaxique}</p>
+                                // 🛸 A. EFFET : Entrée de la souris (Affiche et configure la mini-modale)
+                                spanMot.addEventListener("mouseenter", () => {
+                                    floatingTooltip.innerHTML = `
+                                        <div class="border-b border-slate-700 pb-1">
+                                            <span class="text-[10px] uppercase font-bold text-blue-400">Mot Original</span>
+                                            <p class="text-xl font-serif font-bold text-white">${item.mot_original} <span class="text-xs font-sans font-normal text-slate-400">(${item.translitteration})</span></p>
                                         </div>
                                         <div>
-                                            <span class="text-xs uppercase font-bold text-emerald-400">Sens Littéral & Racine</span>
-                                            <p class="text-sm font-semibold text-white mt-0.5">« ${item.sens_litteral} » <span class="bg-slate-700 px-1.5 py-0.5 rounded text-slate-300 font-mono text-xs">${item.lemme_strong}</span></p>
+                                            <span class="text-[10px] uppercase font-bold text-emerald-400">Sens Littéral</span>
+                                            <p class="font-sans text-slate-200 mt-0.5 font-medium">« ${item.sens_litteral} »</p>
                                         </div>
-                                        <!-- ✅ NOUVELLE ZONE COMPLEMENTAIRE DE SENS GRAMMATICAL ET D'IMPACT CRUCIAL -->
-                                        <div class="pt-2 border-t border-slate-700/60">
-                                            <span class="text-xs uppercase font-bold text-indigo-400 block mb-1">🎯 Portée et Choix du Temps Verbal</span>
-                                            <p class="text-xs text-slate-300 leading-relaxed bg-slate-900/40 p-2.5 rounded-xl border border-slate-800">${item.impact_syntaxique_theologique}</p>
+                                        <div class="bg-slate-900 p-1.5 rounded-lg border border-slate-800 text-[11px] font-mono text-amber-300">
+                                            ${item.analyse_syntaxique}
                                         </div>
                                     `;
-                                }
+                                    floatingTooltip.classList.remove("hidden");
+                                });
+            
+                                // 🛸 B. EFFET : Déplacement de la souris (La mini-modale suit le pointeur de façon fluide)
+                                spanMot.addEventListener("mousemove", (e) => {
+                                    // Positionne la mini-modale à 15px en bas à droite de la pointe de la souris
+                                    floatingTooltip.style.left = `${e.pageX + 15}px`;
+                                    floatingTooltip.style.top = `${e.pageY + 15}px`;
+                                });
+            
+                                // 🛸 C. EFFET : Sortie de la souris (Masque la mini-modale)
+                                spanMot.addEventListener("mouseleave", () => {
+                                    floatingTooltip.classList.add("hidden");
+                                });
+            
+                                // ⚡ D. CLIC : Verrouille et affiche l'analyse théologique complète dans le panneau de droite
+                                spanMot.addEventListener("click", () => {
+                                    fluidInteractiveText.querySelectorAll("span").forEach(s => s.classList.remove("text-blue-700", "bg-blue-100", "font-bold"));
+                                    spanMot.classList.add("text-blue-700", "bg-blue-100", "font-bold");
+            
+                                    const panel = document.getElementById("syntaxDetailsPanel");
+                                    if (panel) {
+                                        panel.className = "space-y-4 flex-1 text-left not-italic text-sm text-slate-200 animate-fadeIn";
+                                        panel.innerHTML = `
+                                            <div>
+                                                <span class="text-xs uppercase tracking-widest text-blue-400 font-bold">Terme Lexical</span>
+                                                <p class="text-3xl font-serif font-bold text-white mt-1">${item.mot_original} <span class="text-xs font-sans font-normal text-slate-400">(${item.translitteration})</span></p>
+                                            </div>
+                                            <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 text-xs">
+                                                <span class="text-xs uppercase font-bold text-amber-400 block mb-0.5">Morphologie & Syntaxe</span>
+                                                <p class="font-mono text-slate-100 leading-relaxed">${item.analyse_syntaxique}</p>
+                                            </div>
+                                            <div>
+                                                <span class="text-xs uppercase font-bold text-emerald-400">Sens & Racine Strong</span>
+                                                <p class="text-sm font-semibold text-white mt-0.5">« ${item.sens_litteral} » <span class="bg-slate-700 px-1.5 py-0.5 rounded text-slate-300 font-mono text-xs">${item.lemme_strong}</span></p>
+                                            </div>
+                                            <div class="pt-2 border-t border-slate-700/60">
+                                                <span class="text-xs uppercase font-bold text-indigo-400 block mb-1">🎯 Portée et Choix du Temps Verbal</span>
+                                                <p class="text-xs text-slate-300 leading-relaxed bg-slate-900/40 p-2.5 rounded-xl border border-slate-800">${item.impact_syntaxique_theologique}</p>
+                                            </div>
+                                        `;
+                                    }
+                                });
+            
+                                fluidInteractiveText.appendChild(spanMot);
                             });
-                            wordsContainer.appendChild(wordBtn);
                         });
                     }
             

@@ -24,49 +24,45 @@ export async function arrangeBibleText(userBibleText) {
             type: "object",
             properties: {
                 reference_identifiee: { type: "string" },
-                versions: {
-                    type: "object",
-                    properties: {
-                        originale: { type: "string" },
-                        malgache_protestante: { type: "string" },
-                        louis_segond: { type: "string" },
-                        darby: { type: "string" },
-                        kjv: { type: "string", description: "King James Version" },
-                        esv: { type: "string", description: "English Standard Version" }
-                    },
-                    required: ["originale", "malgache_protestante", "louis_segond", "darby", "kjv", "esv"]
-                },
-                mots_cles_theologiques: {
-                    type: "array",
-                    items: { type: "string" }
-                },
-                decorticage_interlineaire: {
+                mots_cles_theologiques: { type: "array", items: { type: "string" } },
+                // Structure interlinéaire unifiée par verset
+                versets: {
                     type: "array",
                     items: {
                         type: "object",
                         properties: {
-                            mot_original: { type: "string" },
-                            translitteration: { type: "string" },
-                            lemme_strong: { type: "string" },
-                            analyse_syntaxique: { type: "string" },
-                            sens_litteral: { type: "string" },
-                            // ✅ AJOUT DE L'ANALYSE PAR ETAPE DE SENS GRAMMATICAL ET IMPACT THEOLOGIQUE
-                            impact_syntaxique_theologique: { 
-                                type: "string", 
-                                description: "Explication approfondie en français de l'impact du temps verbal (ex: Aoriste, Parfait), du mode ou de la déclinaison sur le sens théologique précis du verset." 
+                            numero_verset: { type: "integer" },
+                            texte_malgache: { type: "string" },
+                            texte_darby: { type: "string" },
+                            texte_kjv: { type: "string" },
+                            texte_esv: { type: "string" },
+                            // Le texte Louis Segond éclaté mot par mot pour le survol interactif
+                            mots_louis_segond: {
+                                type: "array",
+                                items: {
+                                    type: "object",
+                                    properties: {
+                                        mot_francais: { type: "string", description: "Le mot en français (ex: 'aimeras')" },
+                                        mot_original: { type: "string", description: "Le mot hébreu ou grec correspondant." },
+                                        translitteration: { type: "string" },
+                                        lemme_strong: { type: "string" },
+                                        analyse_syntaxique: { type: "string" },
+                                        sens_litteral: { type: "string" },
+                                        impact_syntaxique_theologique: { type: "string" }
+                                    },
+                                    required: ["mot_francais", "mot_original", "translitteration", "lemme_strong", "analyse_syntaxique", "sens_litteral", "impact_syntaxique_theologique"]
+                                }
                             }
                         },
-                        required: ["mot_original", "translitteration", "lemme_strong", "analyse_syntaxique", "sens_litteral", "impact_syntaxique_theologique"]
+                        required: ["numero_verset", "texte_malgache", "texte_darby", "texte_kjv", "texte_esv", "mots_louis_segond"]
                     }
                 }
             },
-            required: ["reference_identifiee", "versions", "mots_cles_theologiques", "decorticage_interlineaire"]
+            required: ["reference_identifiee", "mots_cles_theologiques", "versets"]
         },
-        systemInstruction: `Tu es un érudit en langues bibliques (Hébreu biblique, Araméen et Grec Koinè) et expert des traductions protestantes internationales (malgaches, françaises, anglaises).
-        Ton rôle est d'agir comme un moteur de recherche interlinéaire complet.
-        1. Identifie le texte biblique. Utilise l'Hébreu pour l'Ancien Testament, le Grec Koinè pour le Nouveau.
-        2. Traduis le verset dans toutes les versions demandées, y compris la King James (KJV) et l'English Standard Version (ESV).
-        3. Découpe le texte original MOT PAR MOT. Pour chaque mot, explique de manière approfondie l'impact de sa morphologie grammaticale (temps verbal, déclinaisons, cas) sur l'interprétation exégétique et doctrinale du passage.`
+        systemInstruction: `Tu es un expert en langues bibliques et en analyse interlinéaire.
+        Tu prends le passage biblique demandé et tu le découpes par numéro de verset.
+        Pour la version Louis Segond, tu dois obligatoirement éclater la phrase mot par mot dans le tableau 'mots_louis_segond'. Pour chaque mot français, associe-lui son mot original exact en hébreu ou grec, sa translittération, sa grammaire et son impact théologique.`
     };
 
     const MODELES_A_TESTER = ["gemini-2.5-flash", "gemini-3.1-pro-preview"];
@@ -77,11 +73,11 @@ export async function arrangeBibleText(userBibleText) {
         for (let i = 0; i < API_KEYS.length; i++) {
             if (successGeneration) break;
             try {
-                console.log(`🤖 [Linguistique Expert] Modèle [${modelName}] Clé n°${i + 1}...`);
+                console.log(`🤖 [Interlinéaire Fusionné] Modèle [${modelName}] Clé n°${i + 1}...`);
                 const ai = new GoogleGenAI({ apiKey: API_KEYS[i] });
                 const response = await ai.models.generateContent({
                     model: modelName,
-                    contents: `Versions et exégèse mot à mot pour : "${userBibleText}"`,
+                    contents: `Génère l'exégèse interlinéaire par verset pour : "${userBibleText}"`,
                     config: requestConfig
                 });
                 responseText = response.text;
@@ -94,10 +90,5 @@ export async function arrangeBibleText(userBibleText) {
     }
 
     if (!successGeneration) throw new Error("Serveurs d'analyse linguistique saturés.");
-
-    try {
-        return { success: true, data: JSON.parse(responseText) };
-    } catch (error) {
-        throw error;
-    }
+    return { success: true, data: JSON.parse(responseText) };
 }
