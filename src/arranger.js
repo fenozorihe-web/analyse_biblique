@@ -31,35 +31,37 @@ export async function arrangeBibleText(userBibleText) {
                         type: "object",
                         properties: {
                             numero_verset: { type: "integer" },
+                            texte_original_integral: { type: "string", description: "Le verset complet en Hébreu ou Grec Koinè." },
                             texte_malgache: { type: "string" },
                             texte_darby: { type: "string" },
                             texte_kjv: { type: "string" },
                             texte_esv: { type: "string" },
-                            mots_louis_segond: {
+                            mots_interlineaires: {
                                 type: "array",
                                 items: {
                                     type: "object",
                                     properties: {
-                                        mot_francais: { type: "string" },
-                                        mot_original: { type: "string" },
+                                        mot_francais: { type: "string", description: "Le mot ou segment de phrase français correspondant." },
+                                        mot_original: { type: "string", description: "Le mot en caractères grecs ou hébreux." },
                                         translitteration: { type: "string" },
-                                        lemme_strong: { type: "string", description: "Le lemme racine et son numéro Strong (ex: G3056 / H7225)." },
-                                        analyse_syntaxique: { type: "string", description: "Morphologie concise (ex: Verbe Aoriste Actif 3s)." },
-                                        sens_litteral: { type: "string", description: "Définition brute en français." },
-                                        impact_syntaxique_theologique: { type: "string", description: "Explication de la portée théologique du mot ou du temps verbal." }
+                                        lemme_strong: { type: "string" },
+                                        analyse_syntaxique: { type: "string" },
+                                        sens_litteral: { type: "string" },
+                                        impact_syntaxique_theologique: { type: "string" }
                                     },
                                     required: ["mot_francais", "mot_original", "translitteration", "lemme_strong", "analyse_syntaxique", "sens_litteral", "impact_syntaxique_theologique"]
                                 }
                             }
                         },
-                        required: ["numero_verset", "texte_malgache", "texte_darby", "texte_kjv", "texte_esv", "mots_louis_segond"]
+                        required: ["numero_verset", "texte_original_integral", "texte_malgache", "texte_darby", "texte_kjv", "texte_esv", "mots_interlineaires"]
                     }
                 }
             },
             required: ["reference_identifiee", "mots_cles_theologiques", "versets"]
         },
         systemInstruction: `Tu es un expert en langues bibliques. Découpe le passage par numéro de verset. 
-        Pour chaque mot français de Louis Segond, associe son équivalent hébreu/grec dans 'mots_louis_segond'. Sois très précis mais concis dans tes réponses pour préserver la taille du JSON.`
+        Pour chaque verset, fournis l'équivalent hébreu/grec dans 'texte_original_integral'. 
+        Dans le tableau 'mots_interlineaires', sépare la phrase Louis Segond mot par mot et associe à chaque mot français son équivalent hébreu/grec exact avec son code strong, son analyse morphologique et l'impact du choix de sa déclinaison.`
     };
 
     const MODELES_A_TESTER = ["gemini-2.5-flash", "gemini-3.1-pro-preview"];
@@ -70,18 +72,18 @@ export async function arrangeBibleText(userBibleText) {
         for (let i = 0; i < API_KEYS.length; i++) {
             if (successGeneration) break;
             try {
-                console.log(`🤖 [Interlinéaire Précis] Modèle [${modelName}] Clé n°${i + 1}...`);
+                console.log(`🤖 [Moteur Interlinéaire Multi-Langues] Essai : Modèle [${modelName}]...`);
                 const ai = new GoogleGenAI({ apiKey: API_KEYS[i] });
                 const response = await ai.models.generateContent({
                     model: modelName,
-                    contents: `Génère l'exégèse pas à pas pour : "${userBibleText}"`,
+                    contents: `Génère l'exégèse et les versions pour : "${userBibleText}"`,
                     config: requestConfig
                 });
                 responseText = response.text;
                 successGeneration = true;
                 break;
             } catch (err) {
-                console.warn(`⚠️ Échec modèle [${modelName}] Clé n°${i + 1}.`);
+                console.warn(`⚠️ Échec modèle [${modelName}] Clé n°${i + 1}`);
             }
         }
     }
